@@ -1,0 +1,34 @@
+﻿.node__title-icon {
+    /* Reduce the brightness of the title icon */
+    -unity-background-image-tint-color: rgb(200, 200, 200);
+}
+
+.component-data
+{
+    background-image: var(--component-icon);
+}
+
+.tag-component-data
+{
+    background-image: var(--tag-component-icon);
+}
+
+.buffer-component-data
+{
+    background-image: var(--buffer-component-icon);
+}
+
+.shared-component-data
+{
+    background-image: var(--shared-component-icon);
+}
+
+.chunk-component-data
+{
+    background-image: var(--chunk-component-icon);
+}
+
+.managed-component-data
+{
+    background-image: var(--managed-component-icon);
+}

@@ -1,0 +1,8 @@
+﻿#Value {
+    justify-content: center;
+    margin-left: 10px;
+}
+
+#title {
+    height: 28px;
+}

@@ -1,0 +1,355 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67edeb0fc0c6e8346a817ca7d4166ffd, type: 3}
+  m_Name: Character
+  m_EditorClassIdentifier: 
+  nodes:
+  - rid: 3800800909300334844
+  - rid: 3800800996378017792
+  - rid: 3800801248274285021
+  - rid: 3592421237538685087
+  - rid: 3592421237538685114
+  - rid: 3592421237538685118
+  - rid: 3592421237538685121
+  - rid: 3592421237538685124
+  - rid: 3592421237538685125
+  - rid: 3592421257448259656
+  edges:
+  - GUID: d3f6666f-e397-4b85-8a63-c28f7201fb97
+    owner: {fileID: 11400000}
+    toNodeGUID: 692b2698-b321-4a17-81a7-7c1d2ef52d1f
+    fromNodeGUID: fcc512e7-4c1c-447f-9707-168f4bec2c20
+    toPortIdentifier: baseMovement
+    fromPortIdentifier: output
+  - GUID: 3cf3c87e-d5c3-4b23-ba05-bad4ec84186c
+    owner: {fileID: 11400000}
+    toNodeGUID: 1c211ceb-35e2-469e-886b-bf539099c400
+    fromNodeGUID: fcc512e7-4c1c-447f-9707-168f4bec2c20
+    toPortIdentifier: baseMovement
+    fromPortIdentifier: output
+  - GUID: ca23528a-c078-40b7-a6b3-b8e595b3bc17
+    owner: {fileID: 11400000}
+    toNodeGUID: 1c211ceb-35e2-469e-886b-bf539099c400
+    fromNodeGUID: bb1b87da-e5ee-4fdb-8a7f-8ae8c99c77ad
+    toPortIdentifier: isDashing
+    fromPortIdentifier: output
+  - GUID: 5ecca761-0a2e-4b08-aefb-830c0e4fe657
+    owner: {fileID: 11400000}
+    toNodeGUID: 1c211ceb-35e2-469e-886b-bf539099c400
+    fromNodeGUID: 692b2698-b321-4a17-81a7-7c1d2ef52d1f
+    toPortIdentifier: dashVelocity
+    fromPortIdentifier: dashVelocity
+  - GUID: a18ce57f-51b1-4251-8d03-edcd52a148f3
+    owner: {fileID: 11400000}
+    toNodeGUID: ce637a94-2423-4a9d-be17-a66308f3701b
+    fromNodeGUID: 692b2698-b321-4a17-81a7-7c1d2ef52d1f
+    toPortIdentifier: booleans
+    fromPortIdentifier: canDash
+  - GUID: 534444be-9390-4fbf-a953-9fccb7061d6e
+    owner: {fileID: 11400000}
+    toNodeGUID: bb1b87da-e5ee-4fdb-8a7f-8ae8c99c77ad
+    fromNodeGUID: ce637a94-2423-4a9d-be17-a66308f3701b
+    toPortIdentifier: requested
+    fromPortIdentifier: result
+  - GUID: 18ea37da-272b-4ca2-a408-222dc130dc1d
+    owner: {fileID: 11400000}
+    toNodeGUID: 692b2698-b321-4a17-81a7-7c1d2ef52d1f
+    fromNodeGUID: c25b7598-3bfe-4389-9f77-14272b46bbd9
+    toPortIdentifier: currentVelocity
+    fromPortIdentifier: Linear_out
+  - GUID: f4c27630-85e7-461a-b8cc-754c2b3d0851
+    owner: {fileID: 11400000}
+    toNodeGUID: 66ea3c9d-6221-46e1-84fc-5d55dcfcb940
+    fromNodeGUID: 1c211ceb-35e2-469e-886b-bf539099c400
+    toPortIdentifier: MoveVector_in
+    fromPortIdentifier: output
+  - GUID: dc62a1ec-4815-4fb6-a274-e79b14fd279b
+    owner: {fileID: 11400000}
+    toNodeGUID: fcc512e7-4c1c-447f-9707-168f4bec2c20
+    fromNodeGUID: 2c1e78d2-73db-4bfd-8db5-60309cd57a27
+    toPortIdentifier: joystick
+    fromPortIdentifier: output
+  - GUID: aa9078e3-90ea-41c0-937f-7cc0173a0916
+    owner: {fileID: 11400000}
+    toNodeGUID: dd7b15ef-67b6-4992-a4f0-5ff309fd7d19
+    fromNodeGUID: 759b6958-e2be-43af-a460-7fcc635c01c3
+    toPortIdentifier: value
+    fromPortIdentifier: left
+  - GUID: d668049c-c858-42c0-9d08-5a47c2e0e3d3
+    owner: {fileID: 11400000}
+    toNodeGUID: ce637a94-2423-4a9d-be17-a66308f3701b
+    fromNodeGUID: dd7b15ef-67b6-4992-a4f0-5ff309fd7d19
+    toPortIdentifier: booleans
+    fromPortIdentifier: output
+  groups: []
+  stackNodes: []
+  stickyNotes: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 3592421237538685087
+      type: {class: ScriptNode, ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        GUID: 1c211ceb-35e2-469e-886b-bf539099c400
+        customName: 
+        Position:
+          x: 322
+          y: 762
+        IsLocked: 0
+        DoNotLogErrors: 0
+        Method:
+          AssemblyQualifiedTypeName: Samples.Dashing.Dashing, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          MethodName: Movement
+          Binding: 24
+        PortDefaultValues:
+        - rid: 3592421237538685088
+        - rid: 3592421237538685089
+        - rid: 3592421237538685090
+        - rid: 3592421237538685106
+        - rid: 3592421237538685112
+        - rid: 3592421237538685113
+    - rid: 3592421237538685088
+      type: {class: 'PortDefault`1[[Unity.Mathematics.float2, Unity.Mathematics]]', ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        Value:
+          x: 0
+          y: 0
+        Port: joystick
+    - rid: 3592421237538685089
+      type: {class: 'PortDefault`1[[System.Boolean, mscorlib]]', ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        Value: 0
+        Port: isDashing
+    - rid: 3592421237538685090
+      type: {class: 'PortDefault`1[[System.Single, mscorlib]]', ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        Value: 0
+        Port: dashSpeed
+    - rid: 3592421237538685106
+      type: {class: 'PortDefault`1[[Unity.Mathematics.float3, Unity.Mathematics]]', ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        Value:
+          x: 0
+          y: 0
+          z: 0
+        Port: currentVelocity
+    - rid: 3592421237538685112
+      type: {class: 'PortDefault`1[[Unity.Mathematics.float3, Unity.Mathematics]]', ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        Value:
+          x: 0
+          y: 0
+          z: 0
+        Port: baseMovement
+    - rid: 3592421237538685113
+      type: {class: 'PortDefault`1[[Unity.Mathematics.float3, Unity.Mathematics]]', ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        Value:
+          x: 0
+          y: 0
+          z: 0
+        Port: dashVelocity
+    - rid: 3592421237538685114
+      type: {class: ScriptNode, ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        GUID: 692b2698-b321-4a17-81a7-7c1d2ef52d1f
+        customName: 
+        Position:
+          x: 546
+          y: 361
+        IsLocked: 0
+        DoNotLogErrors: 0
+        Method:
+          AssemblyQualifiedTypeName: Samples.Dashing.Dashing, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          MethodName: DashVelocity
+          Binding: 24
+        PortDefaultValues:
+        - rid: 3592421237538685115
+        - rid: 3592421237538685116
+        - rid: 3592421237538685117
+    - rid: 3592421237538685115
+      type: {class: 'PortDefault`1[[Unity.Mathematics.float3, Unity.Mathematics]]', ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        Value:
+          x: 0
+          y: 0
+          z: 0
+        Port: currentVelocity
+    - rid: 3592421237538685116
+      type: {class: 'PortDefault`1[[Unity.Mathematics.float3, Unity.Mathematics]]', ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        Value:
+          x: 0
+          y: 0
+          z: 0
+        Port: baseMovement
+    - rid: 3592421237538685117
+      type: {class: 'PortDefault`1[[System.Single, mscorlib]]', ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        Value: 15
+        Port: dashSpeed
+    - rid: 3592421237538685118
+      type: {class: ScriptNode, ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        GUID: fcc512e7-4c1c-447f-9707-168f4bec2c20
+        customName: 
+        Position:
+          x: 213
+          y: 209
+        IsLocked: 0
+        DoNotLogErrors: 0
+        Method:
+          AssemblyQualifiedTypeName: Samples.Dashing.Dashing, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          MethodName: BaseMovement
+          Binding: 24
+        PortDefaultValues:
+        - rid: 3592421237538685119
+        - rid: 3592421237538685120
+    - rid: 3592421237538685119
+      type: {class: 'PortDefault`1[[Unity.Mathematics.float2, Unity.Mathematics]]', ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        Value:
+          x: 0
+          y: 0
+        Port: joystick
+    - rid: 3592421237538685120
+      type: {class: 'PortDefault`1[[System.Single, mscorlib]]', ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        Value: 1
+        Port: movementSpeed
+    - rid: 3592421237538685121
+      type: {class: ScriptNode, ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        GUID: bb1b87da-e5ee-4fdb-8a7f-8ae8c99c77ad
+        customName: IsDashing
+        Position:
+          x: 668
+          y: 559
+        IsLocked: 0
+        DoNotLogErrors: 0
+        Method:
+          AssemblyQualifiedTypeName: Samples.Dashing.Dashing, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          MethodName: AbilityCooldown
+          Binding: 24
+        PortDefaultValues:
+        - rid: 3592421237538685122
+        - rid: 3592421237538685123
+    - rid: 3592421237538685122
+      type: {class: 'PortDefault`1[[System.Boolean, mscorlib]]', ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        Value: 0
+        Port: requested
+    - rid: 3592421237538685123
+      type: {class: 'PortDefault`1[[System.Single, mscorlib]]', ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        Value: 0.25
+        Port: cooldown
+    - rid: 3592421237538685124
+      type: {class: ScriptNode, ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        GUID: 2c1e78d2-73db-4bfd-8db5-60309cd57a27
+        customName: 
+        Position:
+          x: 213
+          y: 95
+        IsLocked: 0
+        DoNotLogErrors: 0
+        Method:
+          AssemblyQualifiedTypeName: Examples.SamplesNodes, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          MethodName: MovementInput
+          Binding: 24
+        PortDefaultValues: []
+    - rid: 3592421237538685125
+      type: {class: EcsComponentNode, ns: Lattice.Nodes, asm: Lattice.Runtime}
+      data:
+        GUID: c25b7598-3bfe-4389-9f77-14272b46bbd9
+        customName: 
+        Position:
+          x: 462
+          y: 169
+        IsLocked: 0
+        DoNotLogErrors: 0
+        ComponentType:
+          serializedType: Unity.Physics.PhysicsVelocity, Unity.Physics, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+        AddDuringBake: 0
+        SystemView:
+          serializedType: 
+    - rid: 3592421257448259656
+      type: {class: AndNode, ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        GUID: ce637a94-2423-4a9d-be17-a66308f3701b
+        customName: 
+        Position:
+          x: 721
+          y: 488
+        IsLocked: 0
+        DoNotLogErrors: 0
+    - rid: 3800800909300334844
+      type: {class: EcsComponentNode, ns: Lattice.Nodes, asm: Lattice.Runtime}
+      data:
+        GUID: 66ea3c9d-6221-46e1-84fc-5d55dcfcb940
+        customName: 
+        Position:
+          x: 280
+          y: 901
+        IsLocked: 0
+        DoNotLogErrors: 0
+        ComponentType:
+          serializedType: ThirdPersonCharacterControl, Assembly-CSharp-firstpass,
+            Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+        AddDuringBake: 0
+        SystemView:
+          serializedType: 
+    - rid: 3800800996378017792
+      type: {class: ScriptNode, ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        GUID: 759b6958-e2be-43af-a460-7fcc635c01c3
+        customName: 
+        Position:
+          x: 761
+          y: 70.5
+        IsLocked: 0
+        DoNotLogErrors: 0
+        Method:
+          AssemblyQualifiedTypeName: Examples.SamplesNodes, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          MethodName: MouseInput
+          Binding: 24
+        PortDefaultValues: []
+    - rid: 3800801248274285021
+      type: {class: ScriptNode, ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        GUID: dd7b15ef-67b6-4992-a4f0-5ff309fd7d19
+        customName: 
+        Position:
+          x: 737
+          y: 169
+        IsLocked: 0
+        DoNotLogErrors: 0
+        Method:
+          AssemblyQualifiedTypeName: Lattice.StandardLibrary.StdScriptNodes, Lattice.StandardLibrary,
+            Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+          MethodName: BecomesTrue
+          Binding: 24
+        PortDefaultValues:
+        - rid: 3800801248274285022
+    - rid: 3800801248274285022
+      type: {class: 'PortDefault`1[[System.Boolean, mscorlib]]', ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        Value: 0
+        Port: value

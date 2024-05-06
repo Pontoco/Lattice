@@ -1,0 +1,17 @@
+.lattice-preferences-window
+{
+    padding: 10px 0 0 0;
+}
+
+.lattice-preferences-window__title
+{
+    margin-top: 1px; /* Aligned with *most* other views. */
+    padding: 0 10px 0 10px;
+    font-size: 20px;
+    -unity-font-style: bold;
+}
+
+.lattice-preferences-window__settings
+{
+    padding: 0 10px 0 6px;
+}

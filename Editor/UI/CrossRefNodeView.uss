@@ -1,0 +1,12 @@
+﻿#TopPortsAll {
+    /* Puts the entity input port on the left side, to make it feel more like using a pointer.*/
+    width: 35px;
+}
+
+.node__controls {
+    flex-direction: row;
+}
+
+.node__select-node-button {
+    margin-left: 25px;
+}

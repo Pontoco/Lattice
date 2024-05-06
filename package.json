@@ -1,0 +1,23 @@
+{
+  "name": "com.pon.lattice",
+  "displayName": "Lattice Visual Scripting",
+  "version": "0.0.1",
+  "unity": "2023.2",
+  "description": "A visual scripting system for Unity ECS.",
+  "keywords": [
+    "visualscript",
+    "visual",
+    "ecs",
+    "graph",
+    "UIElements",
+    "unity"
+  ],
+  "samples": [
+    {
+      "displayName": "Samples",
+      "description": "A bunch of examples for using the language.",
+      "path": "Samples~"
+    }
+  ],
+  "category": "Unity"
+}

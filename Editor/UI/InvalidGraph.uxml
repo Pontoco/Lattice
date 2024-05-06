@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement name="FullScreen" style="flex-grow: 1; justify-content: space-around; align-items: auto;">
+        <ui:VisualElement name="Box" style="flex-grow: 0; flex-shrink: 1; flex-direction: column; align-items: flex-start; justify-content: space-between; align-self: center; color: rgb(255, 255, 255); font-size: 15px;">
+            <ui:Label text="The graph could not be loaded." name="MainText" style="-unity-font-style: bold; font-size: 22px; padding-bottom: 15px;" />
+            <ui:Label text="Missing Nodes:" name="MissingNodes" style="padding-top: 5px;" />
+            <ui:Label text="Tips:&#10; • Use the [MovedFrom] attribute to rename nodes.&#10; • Check the Unity Console for other errors or warnings." name="Subtext" style="align-items: flex-start; padding-top: 10px; padding-bottom: 4px;" />
+            <ui:Button text="Open Refactoring Tool" name="OpenRefactor" style="margin-top: 20px;" />
+            <ui:Button text="Delete Null Nodes" name="ClearNullNodes" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
