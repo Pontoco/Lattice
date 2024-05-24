@@ -1,0 +1,31 @@
+﻿.unity-entity-icon {
+    background-image: var(--entity-icon);
+}
+
+.node__goto-button {
+    background-image: var(--go-to-icon);
+    background-size: 70%;
+    background-color: rgba(63, 63, 63, 0);
+    border-width: 0;
+    border-radius: 0;
+    padding: 0 4px;
+    margin: 0;
+    width: 24px;
+    cursor: link;
+}
+
+.node__goto-button:disabled {
+    cursor: arrow;
+}
+
+.node__goto-button:hover {
+    background-color: rgba(127, 127, 127, 0.2);
+}
+
+#input .unity-base-field {
+    min-width: 50px;
+}
+
+#input PropertyField {
+    min-width: 75px;
+}

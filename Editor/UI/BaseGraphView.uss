@@ -1,0 +1,8 @@
+#graphRootView {
+    background-color: #101010;
+}
+
+.lattice-graph-window__graph-area {
+    flex-grow: 1;
+    flex-direction: row;
+}

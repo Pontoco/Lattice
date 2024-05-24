@@ -1,0 +1,274 @@
+.node {
+    --min-height: 32px;
+    min-height: var(--min-height);
+}
+
+#contents > #controls {
+    background-color: rgba(63, 63, 63, 0.8);
+    padding: 0 4px 4px;
+}
+
+#contents > #controls.node__controls--empty {
+    display: none;
+}
+
+.collapsed #contents > #controls {
+    display: none;
+}
+
+#settings-button {
+    align-self: stretch;
+    border-width: 0px;
+    width: 28px;
+    background-color: rgba(63, 63, 63, 0);
+    border-radius: 0px;
+    margin: 0;
+}
+
+#settings-button > #icon {
+    -unity-background-scale-mode: scale-to-fit;
+    background-image: var(--settings-icon);
+    flex-grow: 1;
+}
+
+#settings-button:hover,
+#settings-button.clicked {
+    background-color: rgba(127, 127, 127 0.2);
+}
+
+.node--highlighted {
+    background-color: rgba(0, 63, 63, 0.8);
+}
+
+#RightTitleContainer {
+    justify-content: flex-end;
+    flex-direction: row;
+    align-self: stretch;
+    align-items: center;
+}
+
+#input-container {
+    position: absolute;
+    right: 100%;
+    top: 45px;
+    align-items: flex-end;
+    --layer: -50;
+}
+
+#input-container > .port-input-element > * {
+    min-width: 30px;
+    max-width: 200px;
+}
+
+#input-container > .port-input-element > PropertyField > ColorField,
+#input-container > .port-input-element > PropertyField > ObjectField,
+#input-container > .port-input-element > PropertyField > CurveField {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+#input-container > .port-input-element > PropertyField > TextField {
+    min-width: 50px;
+}
+
+#input-container > .port-input-element > PropertyField > CurveField {
+    width: 100px;
+}
+
+#input-container > .port-input-element > PropertyField > Vector4Field Label,
+#input-container > .port-input-element > PropertyField > Vector3Field Label,
+#input-container > .port-input-element > PropertyField > Vector2Field Label,
+#input-container > .port-input-element > PropertyField > Vector3IntField Label,
+#input-container > .port-input-element > PropertyField > Vector2IntField Label {
+    font-size: 8px;
+    min-width: 8px;
+    flex-basis: 8px;
+    padding-top: 2px;
+    margin-right: 1px;
+    max-height: 150px;
+}
+
+#input-container > .port-input-element > PropertyField > Vector4Field FloatInput,
+#input-container > .port-input-element > PropertyField > Vector3Field FloatInput,
+#input-container > .port-input-element > PropertyField > Vector2Field FloatInput,
+#input-container > .port-input-element > PropertyField > Vector3IntField IntegerInput,
+#input-container > .port-input-element > PropertyField > Vector2IntField IntegerInput {
+    min-width: 28px;
+}
+
+#input-container > .port-input-element > PropertyField > * .unity-composite-field__field-spacer {
+    flex-grow: 0.01;
+}
+
+#input-container ObjectFieldSelector {
+    width: 17px;
+    height: 15px;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+
+#input-container ObjectFieldDisplay > Label {
+    margin-top: 2px;
+}
+
+#input-container ObjectFieldDisplay > Image {
+    margin: 0;
+}
+
+#input-container > .port-input-element > PropertyField > ColorField {
+    width: 60px;
+}
+
+#input-container > .port-input-element > * {
+    margin-left: 2px;
+}
+
+#input-container > .port-input-element * {
+    font-size: 8px;
+}
+
+#input-container > .port-input-element {
+    max-width: 180px;
+    background-color: rgba(72, 72, 72, 0.6);
+    margin-top: 3px;
+    margin-bottom: 2px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+    height: 19px;
+    overflow: hidden;
+    padding-right: 1px;
+}
+
+#input-container > .port-input-element.empty {
+    width: 0;
+    padding: 0;
+}
+
+.collapsed #input-container {
+    visibility: hidden;
+}
+
+#input-container {
+    opacity: 0.6;
+}
+
+.node:checked > #input-container {
+    opacity: 1;
+}
+
+#input-container > .port-input-element IntegerInput,
+#input-container > .port-input-element FloatInput,
+#input-container > .port-input-element TextInput {
+    border-top-left-radius: 1px;
+    border-bottom-left-radius: 1px;
+    border-top-right-radius: 1px;
+    border-bottom-right-radius: 1px;
+    padding-bottom: 1px;
+    height: 15px;
+}
+
+#BottomPortsAll, #TopPortsAll {
+    flex-direction: row;
+    left: 0;
+    right: 0;
+    height: 1px;
+    max-height: 1px;
+}
+
+#BottomPortsAll {
+    bottom: 1px;
+}
+
+#TopPortsAll {
+    bottom: 100%;
+}
+
+#selection-border {
+    bottom: 2px;
+}
+
+#TopPortContainer, #BottomPortContainer {
+    align-self: center;
+    flex-direction: row;
+    flex-grow: 1;
+    flex-shrink: 0;
+    justify-content: space-around;
+}
+
+#BottomLeftPortContainer {
+    align-self: flex-start;
+}
+
+#StatePortContainer {
+    align-self: stretch;
+    justify-content: center;
+    /*padding-top: 7px;*/
+}
+
+#title-button-container {
+    align-items: center;
+    align-content: center;
+}
+
+#collapse-button {
+    width: 16px;
+    height: 16px;
+    margin: 4px;
+}
+
+.hide-label .unity-label {
+    display: none;
+}
+
+.unity-base-field__label {
+    min-width: 20px;
+}
+
+.node__type-label {
+    margin-left: 7px;
+    font-size: 80%;
+    color: #727272;
+}
+
+#title {
+    align-items: center;
+    height: auto;
+    min-height: var(--min-height);
+}
+
+#title-label {
+    margin-top: 4px;
+    margin-bottom: 4px;
+    flex-shrink: 0;
+}
+
+#sub-title-label {
+    margin-top: 0;
+    margin-bottom: 4px;
+    flex-shrink: 0;
+}
+
+.node__title-name-container--has-custom-name > #title-label
+{
+    margin-bottom: 0;
+}
+
+.node__title-name-container--has-custom-name > #sub-title-label
+{
+    margin-top: 0;
+}
+
+.node__title-icon {
+    height: 16px;
+    width: 16px;
+    margin: 0 0 0 6px;
+}
+
+.node__title-name-container {
+    align-self: stretch;
+    justify-content: center;
+    flex-grow: 1;
+    margin-right: 6px;
+}

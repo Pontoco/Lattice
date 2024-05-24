@@ -1,0 +1,21 @@
+{
+  "name": "Lattice.StandardLibrary.Editor",
+  "rootNamespace": "Lattice.StandardLibrary.Editor",
+  "references": [
+    "Lattice.StandardLibrary",
+    "Lattice.Runtime",
+    "Lattice.Editor",
+    "Unity.Entities.UI.Editor"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

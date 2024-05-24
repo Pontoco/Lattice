@@ -1,0 +1,89 @@
+.tooltip-view,
+FakeNodeView {
+    --fill-color: #373737;
+    --outline-color: #191919;
+    --chevron-color: #0F0F0F;
+    color: #D2D2D2;
+    position: absolute;
+    padding: 0;
+    margin: 0;
+}
+
+.tooltip-view__container {
+    padding: 2px 4px;
+}
+
+.tooltip-view__label {
+    padding: 0;
+    margin-left: 1px;
+}
+
+.tooltip-view,
+.tooltip-view.tooltip-view--top {
+    translate: -50% -23px;
+    transform-origin: bottom;
+}
+
+.tooltip-view.tooltip-view--bottom {
+    translate: -50% 8px;
+    transform-origin: top;
+}
+
+.tooltip-view.tooltip-view--left,
+.tooltip-view.tooltip-view--state {
+    transform-origin: right;
+    --chevron-direction: right;
+    translate: -100% -50%;
+}
+
+.tooltip-view.tooltip-view--right {
+    translate: 0 -50%;
+    --chevron-direction: left;
+}
+
+/* Inner container modifications */
+.tooltip-view--left > .tooltip-view__container,
+.tooltip-view--state > .tooltip-view__container {
+    right: 10px;
+    translate: 0 -1px;
+}
+
+.tooltip-view--right > .tooltip-view__container {
+    left: 5px;
+    translate: 0 -1px;
+}
+
+/* Showing all */
+.tooltip-view--enabled-by-force.tooltip-view--bottom {
+    transform-origin: left;
+    translate: 0 -50%;
+    rotate: 45deg;
+    --chevron-direction: left;
+}
+
+.tooltip-view--enabled-by-force.tooltip-view--bottom > .tooltip-view__container {
+    translate: 5px -6px;
+}
+
+.tooltip-view--enabled-by-force.tooltip-view--top {
+    transform-origin: right;
+    translate: -100% -50%;
+    rotate: 45deg;
+    --chevron-direction: right;
+}
+
+.tooltip-view--enabled-by-force.tooltip-view--top > .tooltip-view__container {
+    translate: -6px 5px;
+}
+
+/* FakeNodeView */
+FakeNodeView #title {
+    /* Use tooltip background color */
+    background-color: var(--fill-color);
+}
+
+FakeNodeView #node-border {
+    /* Use tooltip border styling */
+    border-radius: 0;
+    border-color: var(--outline-color);
+}

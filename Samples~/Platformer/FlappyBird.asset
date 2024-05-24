@@ -1,0 +1,258 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67edeb0fc0c6e8346a817ca7d4166ffd, type: 3}
+  m_Name: FlappyBird
+  m_EditorClassIdentifier: 
+  nodes:
+  - rid: 3800801073808802259
+  - rid: 3800801073808802262
+  - rid: 3800801073808802264
+  - rid: 3800801073808802267
+  - rid: 3800801073808802268
+  - rid: 3800801073808802270
+  - rid: 3592421237538685065
+  - rid: 3592421237538685066
+  edges:
+  - GUID: 28f77262-d37f-4605-b66c-d43bbef95a37
+    owner: {fileID: 11400000}
+    toNodeGUID: c9d230d1-7966-43bb-84e1-dc3920a5d3be
+    fromNodeGUID: dd6660b9-bcb8-4afc-b1d2-b71204ec11cf
+    toPortIdentifier: state
+    fromPortIdentifier: state
+    IsHidden: 0
+  - GUID: d39e6e5d-6ced-4436-963e-f9afd3354a22
+    owner: {fileID: 11400000}
+    toNodeGUID: c9d230d1-7966-43bb-84e1-dc3920a5d3be
+    fromNodeGUID: 4bb80872-962a-445b-a60f-a181392623d4
+    toPortIdentifier: state
+    fromPortIdentifier: state
+    IsHidden: 0
+  - GUID: 13e5f7ea-2830-42c2-a27a-d9d4ebcc853d
+    owner: {fileID: 11400000}
+    toNodeGUID: c9d230d1-7966-43bb-84e1-dc3920a5d3be
+    fromNodeGUID: ed97ee7a-9a09-4a16-80cb-17bce044c76a
+    toPortIdentifier: state
+    fromPortIdentifier: state
+    IsHidden: 0
+  - GUID: 3d911121-c903-4205-9530-5fad3d61c3f6
+    owner: {fileID: 11400000}
+    toNodeGUID: 367b2b3e-073f-4006-906a-771596827cf9
+    fromNodeGUID: c9d230d1-7966-43bb-84e1-dc3920a5d3be
+    toPortIdentifier: Position_in
+    fromPortIdentifier: output
+    IsHidden: 0
+  - GUID: b71f8ffc-a428-4577-9c40-f4107faae3d9
+    owner: {fileID: 11400000}
+    toNodeGUID: db54a966-057b-46f3-b17e-789301713952
+    fromNodeGUID: 93ab63e0-2357-4355-bef5-9352a7e940c0
+    toPortIdentifier: value
+    fromPortIdentifier: left
+    IsHidden: 0
+  - GUID: 3e3b6d8e-f30f-4b7b-9bb5-c4b2009338f2
+    owner: {fileID: 11400000}
+    toNodeGUID: dd6660b9-bcb8-4afc-b1d2-b71204ec11cf
+    fromNodeGUID: db54a966-057b-46f3-b17e-789301713952
+    toPortIdentifier: jump
+    fromPortIdentifier: output
+    IsHidden: 0
+  - GUID: b5697253-83aa-495c-a7c2-18e54d3e6702
+    owner: {fileID: 11400000}
+    toNodeGUID: dd6660b9-bcb8-4afc-b1d2-b71204ec11cf
+    fromNodeGUID: 60d208e1-083a-48b5-a84a-5e6f953e077a
+    toPortIdentifier: input
+    fromPortIdentifier: output
+    IsHidden: 0
+  groups: []
+  stackNodes: []
+  stickyNotes:
+  - position:
+      x: 670
+      y: 112
+    title: Old Style of Lattice Usage
+    content: 'This shows how functions can modify the state of other nodes. In this
+      case, the ''State'' node''s state (of type PlayerState) is modified in each
+      of the three blue nodes to the left.
+
+
+      This is interesting, but a confusing
+      way of using lattice, and I wouldn''t recommend currently building graphs in
+      this style. For one, the order of the state modifications is undefined (so
+      gravity could run after collision with the ground).'
+  references:
+    version: 2
+    RefIds:
+    - rid: 3592421237538685064
+      type: {class: 'PortDefault`1[[System.Boolean, mscorlib]]', ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        Value: 0
+        Port: jump
+    - rid: 3592421237538685065
+      type: {class: ScriptNode, ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        GUID: 93ab63e0-2357-4355-bef5-9352a7e940c0
+        customName: 
+        Position:
+          x: 492
+          y: -42
+        IsLocked: 0
+        DoNotLogErrors: 0
+        Method:
+          AssemblyQualifiedTypeName: Examples.SamplesNodes, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          MethodName: MouseInput
+          Binding: 24
+        PortDefaultValues: []
+    - rid: 3592421237538685066
+      type: {class: ScriptNode, ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        GUID: db54a966-057b-46f3-b17e-789301713952
+        customName: 
+        Position:
+          x: 475.5
+          y: 68
+        IsLocked: 0
+        DoNotLogErrors: 0
+        Method:
+          AssemblyQualifiedTypeName: Lattice.StandardLibrary.StdLogicNodes, Lattice.StandardLibrary,
+            Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+          MethodName: BecomesTrue
+          Binding: 24
+        PortDefaultValues:
+        - rid: 3592421237538685067
+    - rid: 3592421237538685067
+      type: {class: 'PortDefault`1[[System.Boolean, mscorlib]]', ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        Value: 0
+        Port: value
+    - rid: 3800801073808802259
+      type: {class: ScriptNode, ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        GUID: 60d208e1-083a-48b5-a84a-5e6f953e077a
+        customName: 
+        Position:
+          x: 321
+          y: 72.8
+        IsLocked: 0
+        DoNotLogErrors: 0
+        Method:
+          AssemblyQualifiedTypeName: Examples.SamplesNodes, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          MethodName: MovementInput
+          Binding: 24
+        PortDefaultValues: []
+    - rid: 3800801073808802262
+      type: {class: ScriptNode, ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        GUID: 4bb80872-962a-445b-a60f-a181392623d4
+        customName: 
+        Position:
+          x: 321
+          y: 268
+        IsLocked: 0
+        DoNotLogErrors: 0
+        Method:
+          AssemblyQualifiedTypeName: GTF.PlatformerSimple, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          MethodName: HandleGround
+          Binding: 24
+        PortDefaultValues:
+        - rid: 3800801073808802263
+    - rid: 3800801073808802263
+      type: {class: 'PortDefault`1[[System.Single, mscorlib]]', ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        Value: 0
+        Port: height
+    - rid: 3800801073808802264
+      type: {class: ScriptNode, ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        GUID: dd6660b9-bcb8-4afc-b1d2-b71204ec11cf
+        customName: 
+        Position:
+          x: 308
+          y: 172
+        IsLocked: 0
+        DoNotLogErrors: 0
+        Method:
+          AssemblyQualifiedTypeName: GTF.PlatformerSimple, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          MethodName: HandleMovement
+          Binding: 24
+        PortDefaultValues:
+        - rid: 3800801073808802265
+        - rid: 3800801073808802266
+        - rid: 3592421237538685064
+    - rid: 3800801073808802265
+      type: {class: 'PortDefault`1[[Unity.Mathematics.float2, Unity.Mathematics]]', ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        Value:
+          x: 0
+          y: 0
+        Port: input
+    - rid: 3800801073808802266
+      type: {class: 'PortDefault`1[[System.Single, mscorlib]]', ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        Value: 0.2
+        Port: jumpVelocity
+    - rid: 3800801073808802267
+      type: {class: ScriptNode, ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        GUID: c9d230d1-7966-43bb-84e1-dc3920a5d3be
+        customName: 
+        Position:
+          x: 593
+          y: 350
+        IsLocked: 0
+        DoNotLogErrors: 0
+        Method:
+          AssemblyQualifiedTypeName: GTF.PlatformerSimple, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          MethodName: State
+          Binding: 24
+        PortDefaultValues: []
+    - rid: 3800801073808802268
+      type: {class: ScriptNode, ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        GUID: ed97ee7a-9a09-4a16-80cb-17bce044c76a
+        customName: 
+        Position:
+          x: 334
+          y: 360.5
+        IsLocked: 0
+        DoNotLogErrors: 0
+        Method:
+          AssemblyQualifiedTypeName: GTF.PlatformerSimple, Assembly-CSharp, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+          MethodName: StepPlayer
+          Binding: 24
+        PortDefaultValues:
+        - rid: 3800801073808802269
+    - rid: 3800801073808802269
+      type: {class: 'PortDefault`1[[System.Single, mscorlib]]', ns: Lattice.StandardLibrary, asm: Lattice.StandardLibrary}
+      data:
+        Value: 2
+        Port: gravity
+    - rid: 3800801073808802270
+      type: {class: EcsComponentNode, ns: Lattice.Nodes, asm: Lattice.StandardLibrary}
+      data:
+        GUID: 367b2b3e-073f-4006-906a-771596827cf9
+        customName: 
+        Position:
+          x: 574
+          y: 569
+        IsLocked: 0
+        DoNotLogErrors: 0
+        ComponentType:
+          serializedType: Unity.Transforms.LocalTransform, Unity.Transforms, Version=0.0.0.0,
+            Culture=neutral, PublicKeyToken=null
+        AddDuringBake: 0
+        SystemView:
+          serializedType: 

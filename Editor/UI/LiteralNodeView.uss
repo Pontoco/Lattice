@@ -1,0 +1,44 @@
+﻿.node {
+    --min-height: 28px;
+}
+
+.node__value {
+    justify-content: center;
+    flex-grow: 1;
+    min-width: 60px;
+    margin-right: 6px;
+}
+
+.node__value.node__value--Color,
+.node__value.node__value--Color32 {
+    min-width: 80px;
+}
+
+.node__value.node__value--Boolean {
+    min-width: initial;
+}
+
+.node__value.node__value--Boolean Toggle {
+    margin: 0;
+}
+
+.node__value.node__value--float3 {
+    max-width: 330px;
+    min-width: 120px;
+}
+
+.node__value.node__value--float2 {
+    width: 145px;
+    max-width: 330px;
+    min-width: 120px;
+}
+
+.node__value.node__value--float3,
+.node__value.node__value--float2 {
+    height: var(--unity-metrics-single_line_large-height);
+    align-self: center;
+}
+
+.node__title-name-container {
+    
+}

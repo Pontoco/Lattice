@@ -1,0 +1,192 @@
+:root {
+    --port-view-background-color: #212121;
+}
+
+PortView {
+    height: 24px;
+    align-items: center;
+    padding-left: 4px;
+    padding-right: 4px;
+    flex-shrink: 0;
+}
+
+PortView.input {
+    flex-direction: row;
+}
+
+PortView.output {
+    flex-direction: row-reverse;
+}
+
+PortView.Vertical #type {
+    display: none;
+}
+
+PortView > #connector {
+    border-color: rgb(255, 255, 0);
+    background-color: var(--port-view-background-color);
+    width: 8px;
+    height: 8px;
+    border-radius: 8px;
+    align-items: center;
+    justify-content: center;
+
+    margin-left: 4px;
+    margin-right: 4px;
+    border-left-width: 1px;
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+}
+
+PortView:hover > #connector {
+    border-color: #f0f0f0
+}
+
+PortView > #connector > #cap {
+    background-color: #212121;
+    width: 4px;
+    height: 4px;
+    border-radius: 4px;
+}
+
+PortView:hover > #connector > #cap {
+    background-color: #f0f0f0;
+}
+
+PortView.port--connected > #connector > #cap {
+    background-color: var(--port-color);
+}
+
+PortView > #type {
+    min-width: 30px;
+}
+
+PortView > PropertyField {
+    flex-grow: 1;
+}
+
+PortView.port--connected > PropertyField {
+    display: none;
+}
+
+.port--Boolean {
+    --port-color: #ff6d29;
+}
+
+.port--Entity {
+    --port-color: #f5de6d;
+}
+
+.port--Single {
+    --port-color: #13b8cc;
+}
+
+.port--float2,
+.port--Vector2 {
+    --port-color: #0a9abe;
+}
+
+.port--float3,
+.port--Vector3 {
+    --port-color: #007bb0;
+}
+
+.port--Int32 {
+    --port-color: #325dff;
+}
+
+.port--quaternion,
+.port--float4,
+.port--Vector4 {
+    --port-color: #8784ff;
+}
+
+.port--Matrix4x4,
+.port--float4x4,
+.port--float4x3,
+.port--float4x2,
+.port--float3x4,
+.port--float3x3,
+.port--float2x4,
+.port--float2x2 {
+    --port-color: #8FC1DF;
+}
+
+.port--Object {
+    --port-color: #80FF00;
+}
+
+.port--String {
+    --port-color: #80FF80;
+}
+
+.port--GameObject {
+    --port-color: #FF0000;
+}
+
+.port--Color,
+.port--Color32 {
+    --port-color: #da5fda;
+}
+
+.port--ITypeUnknown {
+    --port-color: #FF534A;
+}
+
+/* the nullableOverlay is a 45deg angled half-circle over the port 
+   when not connected, this circle is faded and in the top left */
+#nullableOverlay {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 50%;
+    top: 0;
+    bottom: 0;
+    background-color: var(--port-color);
+    border-width: 0;
+    border-radius: 8px 0 0 8px;
+    transform-origin: right;
+    rotate: 45deg;
+    opacity: 0.5;
+}
+
+/* the overlay is only shown when the port is marked as nullable */
+.port.port--is-nullable > #connector > #nullableOverlay {
+    display: flex;
+}
+
+/* when connected, the overlay hides the connector cap by overlaying
+   a half-circle over the bottom-right */
+.port.port--connected > #connector > #nullableOverlay {
+    background-color: var(--port-view-background-color);
+    opacity: 1;
+    top: 1px;
+    bottom: 1px;
+    left: 1px;
+    rotate: -135deg;
+    border-width: 0;
+    border-radius: 7px 0 0 7px;
+}
+
+/* hide the nullable overlay when hovered */
+PortView:hover > #connector > #nullableOverlay {
+    visibility: hidden;
+}
+
+/* but don't hide it when if it's connected */
+PortView:hover.port--connected > #connector > #nullableOverlay {
+    visibility: visible;
+}
+
+PortView.input.Vertical > IconBadge {
+    translate: 1px 4px;
+}
+
+PortView.output.Vertical > IconBadge {
+    translate: 1px -4px;
+}
+
+.Vertical {
+    height: 16px;
+}

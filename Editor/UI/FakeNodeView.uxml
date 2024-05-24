@@ -1,0 +1,32 @@
+<UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement class="node expanded" pickingMode="ignore">
+        <ui:VisualElement name="input-container" pickingMode="ignore"/>
+        <ui:VisualElement name="node-border" pickingMode="ignore">
+            <ui:VisualElement name="title" pickingMode="ignore">
+                <ui:VisualElement name="StatePortContainer" class="unity-disabled" pickingMode="ignore">
+                    <!-- State Ports -->
+                </ui:VisualElement>
+                <ui:VisualElement name="TitleIcon" class="node__title-icon" pickingMode="ignore"/>
+                <ui:VisualElement class="node__title-name-container" pickingMode="ignore">
+                    <ui:Label name="title-label" text="Title" class="unity-text-element unity-label" pickingMode="ignore"/>
+                    <ui:Label name="sub-title-label" text="Sub Title"
+                              class="unity-text-element unity-label node__type-label" pickingMode="ignore"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="selection-border" pickingMode="ignore"/>
+        <ui:VisualElement name="TopPortsAll" pickingMode="ignore">
+            <ui:VisualElement name="TopPortContainer" pickingMode="ignore">
+                <!-- Top Ports -->
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="BottomPortsAll" pickingMode="ignore">
+            <ui:VisualElement name="BottomLeftPortContainer" pickingMode="ignore">
+                <!-- Bottom Left Ports -->
+            </ui:VisualElement>
+            <ui:VisualElement name="BottomPortContainer" pickingMode="ignore">
+                <!-- Bottom Ports-->
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</UXML>

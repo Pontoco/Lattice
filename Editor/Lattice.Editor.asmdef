@@ -1,0 +1,28 @@
+{
+    "name": "Lattice.Editor",
+    "rootNamespace": "Lattice.Editor",
+    "references": [
+        "GUID:ca937d03ee5dd4d699091438dc0f3ae6",
+        "GUID:c483207bc8ac5c045acd707ba73723b4",
+        "GUID:734d92eba21c94caba915361bd5ac177",
+        "GUID:e0cd26848372d4e5c891c569017e11f1",
+        "GUID:2765e68924a08a94ea0ea66b31c0168f",
+        "GUID:d8b63aba1907145bea998dd612889d6b",
+        "GUID:c38fb62397af04c51b143415e1db6d90",
+        "GUID:d5b6d673878904c4e86229129b6086a2",
+        "GUID:4988cf9794f41d64c884876ab6574b89"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [
+        "GrEmit.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
