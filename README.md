@@ -24,4 +24,7 @@ For more information, watch the [Overview Video](https://www.youtube.com/watch?v
  - Lattice.Runtime: This is the core Lattice compiler and executor. It also contains the serialized asset formats for graphs.
  - Lattice.StandardLibrary: A default set of nodes and extensions that projects can use. Most common nodes are exposed here.
  - Lattice.Editor: The Unity Editor UI and all workflows associated.
+
+## Licensing
+Lattice is licensed under the Free For Small Business License. Please read the license page for more information, or contact us with questions.
  
