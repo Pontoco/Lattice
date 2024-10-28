@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -50,7 +51,8 @@ namespace Lattice.Editor.Views
                 switch (evtSource)
                 {
                     case GraphTooltipEventSource.PointerEvent:
-                        // If the pointer created this view, show tooltips for ports connected via edges.
+                    case GraphTooltipEventSource.RedirectNode:
+                        // If the pointer created this view, or this is a redirect node, show tooltips for ports connected via edges.
                         ShowTooltipsOnConnectedEdges();
                         break;
                     case GraphTooltipEventSource.ForceShow:
@@ -76,11 +78,7 @@ namespace Lattice.Editor.Views
             {
                 parentGraph ??= port.GetFirstAncestorOfType<LatticeGraphView>();
                 Rect rect = parentGraph.contentRect;
-                foreach (EdgeView edge in port.Edges)
-                {
-                    bool isEdgeHidden = edge.SerializedEdge?.IsHidden ?? false;
-                    ShowTooltip((PortView)(edge.input == port ? edge.output : edge.input), isEdgeHidden);
-                }
+                InvokeOnConnectedPorts(port, ShowTooltip);
                 
                 // Ensure this tooltip is always in front.
                 BringToFront();
@@ -121,6 +119,27 @@ namespace Lattice.Editor.Views
                     }
                 }
             }
+            
+            private static void InvokeOnConnectedPorts(PortView query, Action<PortView, bool> callback)
+            {
+                foreach (EdgeView edge in query.Edges)
+                {
+                    bool isEdgeHidden = edge.SerializedEdge?.IsHidden ?? false;
+                    PortView connected = (PortView)(edge.input == query ? edge.output : edge.input);
+                    if (connected.Owner is RedirectNodeView)
+                    {
+                        // Get ports from all the way down redirect nodes.
+                        PortView other = query.direction == UnityEditor.Experimental.GraphView.Direction.Input ?
+                            connected.Owner.InputPortViews[0] :
+                            connected.Owner.OutputPortViews[0];
+                        InvokeOnConnectedPorts(other, callback);
+                    }
+                    else
+                    {
+                        callback(connected, isEdgeHidden);
+                    }
+                }
+            }
 
             /// <inheritdoc />
             protected override void OnHide()
@@ -131,23 +150,17 @@ namespace Lattice.Editor.Views
                 RemoveFakeNodeViews();
 
                 // Hide any tooltips from connected ports.
-                foreach (EdgeView edge in port.Edges)
-                {
-                    HideTooltip(edge.input == port ? edge.output : edge.input);
-                }
+                InvokeOnConnectedPorts(port, HideTooltip);
 
                 // Hide any hidden edges by resetting the USS class.
                 foreach (EdgeView edge in port.Edges)
                 {
-                    if (edge.SerializedEdge?.IsHidden ?? false)
-                    {
-                        edge.RemoveFromClassList(EdgeView.ForcedHoverUssClassName);
-                    }
+                    edge.RemoveFromClassList(EdgeView.ForcedHoverUssClassName);
                 }
 
                 return;
 
-                void HideTooltip(Port otherPort)
+                void HideTooltip(Port otherPort, bool isEdgeHidden)
                 {
                     if (otherPort == null)
                     {

@@ -6,12 +6,14 @@ using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 using Lattice.Base;
 using Lattice.IR;
+using Lattice.IR.Nodes;
 using Lattice.Nodes;
 using Lattice.Utils;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Pool;
 using UnityEngine.Serialization;
 using Exception = System.Exception;
 
@@ -23,8 +25,8 @@ using Lattice.Editor.Utils;
 namespace Lattice.StandardLibrary
 {
     /// <summary>
-    ///     This is the node type that exposes [LatticeNode] and [LatticeNodes] C# functions to the Lattice editor. The node
-    ///     interprets the method's input parameters and outputs and builds a node you can use in your graphs.
+    ///     This is the node type that exposes [LatticeNode] and [LatticeNodes] C# functions to the Lattice editor. The
+    ///     node interprets the method's input parameters and outputs and builds a node you can use in your graphs.
     /// </summary>
     /// <remarks>
     ///     Also handles setting up state for the function, via 'this ref' parameter inputs. Handles splitting tuple
@@ -95,6 +97,7 @@ namespace Lattice.StandardLibrary
             bool hasThisParam = method.IsDefined(typeof(ExtensionAttribute), false);
 
             int paramIndex = 0;
+            using var _ = CollectionPool<HashSet<string>, string>.Get(out HashSet<string> portNames);
             foreach (var param in method.GetParameters())
             {
                 bool isRef = param.HasRefKeyword();
@@ -102,6 +105,8 @@ namespace Lattice.StandardLibrary
                 Type paramType = param.ParameterType.IsByRef
                     ? param.ParameterType.GetElementType()
                     : param.ParameterType;
+
+                Assert.IsTrue(portNames.Add(param.Name));
 
                 if (!Extensions.TypeIsSupported(paramType))
                 {
@@ -160,8 +165,15 @@ namespace Lattice.StandardLibrary
                         }
                         else
                         {
-                            // Set it with the default value for the given type.
-                            portDefault.Set(Activator.CreateInstance(paramType));
+                            if (typeof(UnityEngine.Object).IsAssignableFrom(paramType))
+                            {
+                                // Unity Object references are always null by default.
+                            }
+                            else
+                            {
+                                // Set it with the default value for the given type.
+                                portDefault.Set(Activator.CreateInstance(paramType));
+                            }
                         }
 
                         PortDefaultValues.Add(portDefault);
@@ -179,7 +191,7 @@ namespace Lattice.StandardLibrary
                     {
                         continue;
                     }
-                    
+
                     if (foundElementNames)
                     {
                         // This shouldn't happen as far as I know. If it does, we'll have to figure out how to select from the several.
@@ -190,6 +202,16 @@ namespace Lattice.StandardLibrary
                     }
 
                     tupleElementNames = names.TransformNames.ToList();
+
+                    foreach (var output in tupleElementNames)
+                    {
+                        if (!portNames.Add(output))
+                        {
+                            throw new LatticeMethodException(
+                                $"Name of output tuple member must not be the same as an input argument: [{output}]",
+                                method);
+                        }
+                    }
 
                     foundElementNames = true;
                 }
@@ -236,20 +258,6 @@ namespace Lattice.StandardLibrary
             throw new LatticePortException($"No default stored for port [{port}]", port);
         }
 
-        // ReSharper disable once UnusedParameter.Local
-        // Just waits for the barrier and returns the boxedRef again.
-        private static BoxedRef<T> ReborrowBoxedRef<T>(BoxedRef<T> boxedRef, Unit barrier)
-        {
-            return boxedRef;
-        }
-
-        // Waits for the function to complete and then just unboxes the state ref as a value.
-        private static TStateType WaitAndUnbox<TStateType, TFuncReturn>(BoxedRef<TStateType> boxedRef,
-                                                                        TFuncReturn resultUnused)
-        {
-            return boxedRef.Value;
-        }
-
         public override void CompileToIR(GraphCompilation compilation)
         {
             InitializeReflection();
@@ -281,14 +289,89 @@ namespace Lattice.StandardLibrary
                 );
             }
 
-            // The primary execution node, that calls the user's function!
-            var primaryNode = compilation.AddNode(this, method.Name, new FunctionIRNode(method));
+            IRNode primaryNode = AddFunctionNodes(compilation, method);
+
+            compilation.SetPrimaryNode(this, primaryNode);
+            
+
+            // Create all of the output ports.
+            // ============================
+            Type returnType = method.ReturnType;
+            if (typeof(ITuple).IsAssignableFrom(returnType))
+            {
+                // Tuples can be used to generate several outputs.
+                int fieldNum = 0;
+                foreach (var field in returnType.GetFields())
+                {
+                    compilation.AddFieldAccessor(this, primaryNode, field.Name, authoredOutputPort: tupleElementNames?[fieldNum++] ?? field.Name);
+                }
+            }
+            else if (returnType != typeof(void))
+            {
+                // single value returned, just set the main node as primary output
+                compilation.Mappings[this].OutputPortMap["output"] = compilation.GetNodeRef(primaryNode);
+            }
+
+            // no output if the return type is void.
+        }
+
+        /// <summary>
+        ///     Sets up the nodes necessary for executing the function, adding previous and mutation nodes for stateful
+        ///     functions, if needed. The resulting nodes are valid in the abstract lattice machine, ut not necessarily for direct
+        ///     execution.
+        /// </summary>
+        private IRNode AddFunctionNodes(GraphCompilation compilation, MethodInfo method)
+        {
+            IRNode executionNode; // The node that accepts the input ports and does the actual execution.
+            IRNode primaryValueNode; // The return value of the function.
+            IRNode stateCopy = null; // The copied state value after execution. Only set if the node is stateful. 
+
+            if (method.GetParameters().Any(p => p.ParameterType.IsByRef))
+            {
+                // The primary execution node, that calls the user's function!
+                var mutationNode = compilation.AddNode(this, method.Name, new MutatorFunctionIRNode(method));
+                executionNode = mutationNode;
+
+                // Add accessors for each of the mutation copies.
+                using var _ = CollectionPool<List<IRNode>, IRNode>.Get(out List<IRNode> mutationAccessors);
+                int j = 1;
+                foreach (var p in method.GetParameters().Where(p => p.ParameterType.IsByRef))
+                {
+                    // The output type is a tuple, where the references are the first N items.
+                    IRNode fieldNode = compilation.AddFieldAccessor(this, executionNode, "Item"+j, name: "RefCopy_" + p.Name);
+                    mutationAccessors.Add(fieldNode);
+                    j++;
+                }
+
+                // We only currently use the copied value of the state ref.
+                Assert.IsTrue(method.GetParameters()[0].ParameterType.IsByRef); // We don't support mutating functions without state.
+                stateCopy = mutationAccessors[0];
+                
+                // Pull off a debugging node that stores the state every frame.
+                if (stateCopy != null)
+                {
+                    var stateDebugNode = compilation.AddNode(this,
+                        CoreIRNodes.Identity(method.GetParameters()[0].ParameterType.GetElementType()));
+                    stateDebugNode.AddInput("value", stateCopy);
+                    compilation.SetStateDebugNode(this, stateDebugNode);
+                }
+
+                // The actual output *value* is the final element of the tuple:
+                primaryValueNode = compilation.AddFieldAccessor(this, executionNode, "Item"+(j),
+                    name: "ReturnValue");
+            }
+            else
+            {
+                // The primary execution node, that calls the user's function!
+                executionNode = compilation.AddNode(this, method.Name, new FunctionIRNode(method));
+                primaryValueNode = executionNode;
+            }
 
             // Set node phase if it's marked with the attribute.
             var phase = method.GetCustomAttribute<LatticePhaseAttribute>();
             if (phase != null)
             {
-                primaryNode.SystemPhase = phase.Phase;
+                executionNode.SystemPhase = phase.Phase;
             }
 
             bool hasThis = method.IsDefined(typeof(ExtensionAttribute), false);
@@ -315,46 +398,12 @@ namespace Lattice.StandardLibrary
 
                     previousNode.AddInput(PreviousIRNode.DefaultValuePort, defaultNode);
 
-                    // First boxedRef sandwich to expose the state to other nodes.
-                    var (boxedRefNode, barrierNode) = compilation.AddBoxedRefSandwich(this, previousNode, StateType);
-                    compilation.Mappings[this].StateRefNode = boxedRefNode;
-                    compilation.Mappings[this].StateRefBarrierNode = barrierNode;
+                    // *add previous
+                    // point previous value at projected output of final mutation
+                    executionNode.AddInput(param.Name, previousNode);
 
-                    // Wait for those mutators, and reborrow the state ref to pass into this function.
-                    IRNode reborrowNode = compilation.AddNode(this,
-                        FunctionIRNode.FromStaticMethod<ScriptNode>(nameof(ReborrowBoxedRef), StateType));
-                    reborrowNode.CheckExceptions = false;
-                    reborrowNode.AddInput("boxedRef", boxedRefNode);
-                    reborrowNode.AddInput("barrier", barrierNode);
-
-                    primaryNode.AddInput(param.Name, reborrowNode);
-
-                    // Unwrap the boxedRef so the previous node can reference it.
-                    var unwrapNode = compilation.AddNode(this, "StateAfterExecute",
-                        FunctionIRNode.FromStaticMethod<ScriptNode>(
-                            nameof(WaitAndUnbox), StateType, 
-                            // If we need a barrier node below, this node takes a Unit type as input.
-                            method.ReturnType != typeof(void) ? method.ReturnType : typeof(Unit)));
-                    unwrapNode.CheckExceptions = false;
-                    unwrapNode.AddInput("boxedRef", reborrowNode);
-
-                    if (method.ReturnType != typeof(void))
-                    {
-                        unwrapNode.AddInput("resultUnused", primaryNode);
-                    }
-                    else
-                    {
-                        // If the method returns void, we can't directly depend on it as an input to StateAfterExecute.
-                        // So, use a barrier node which can actually take an input of type void, and returns Unit.
-                        // We could do this for all stateful script nodes, but it'd add extraneous nodes to the graph.
-                        var barrier = compilation.AddNode(this, "VoidBarrier", new BarrierIRNode());
-                        barrier.AddInput(BarrierIRNode.PortWriters, primaryNode);
-                        unwrapNode.AddInput("resultUnused", barrier);
-                    }
-
-                    compilation.Mappings[this].StateAfterExecute = unwrapNode;
-
-                    previousNode.BackRef = unwrapNode;
+                    Assert.IsNotNull(stateCopy);
+                    previousNode.BackRef = compilation.GetNodeRef(stateCopy);
                 }
                 else
                 {
@@ -369,44 +418,26 @@ namespace Lattice.StandardLibrary
                         Assert.IsFalse(param.ParameterType.IsByRef);
 
                         // Load the stored property and plug that into the input port.
-                        var portName = compilation.AddNode(this, compilation.LiteralString(param.Name));
+                        var portName = compilation.AddNode(this, new LiteralStringIRNode(param.Name));
                         var defaultVal = compilation.AddNode(this, "PortDefault_" + param.Name,
                             FunctionIRNode.FromStaticMethod<ScriptNode>(nameof(GetPortDefault), param.ParameterType));
                         defaultVal.AddInput("port", portName);
-                        primaryNode.AddInput(param.Name, defaultVal);
+                        executionNode.AddInput(param.Name, defaultVal);
                     }
                     else if (!param.IsOptional)
                     {
                         // No input was connected for this param. Can't calculate this function! Throw error instead.
-                        throw new LatticePortRequirementException($"Input on port [{param.Name}] is required.", param.Name);
+                        throw new LatticePortRequirementException($"Input on port [{param.Name}] is required.",
+                            param.Name);
                     }
                 }
 
                 i++;
             }
 
-            compilation.MapInputPorts(this, primaryNode);
-            compilation.SetPrimaryNode(this, primaryNode);
-
-            // Create all of the output ports.
-            // ============================
-            Type returnType = method.ReturnType;
-            if (typeof(ITuple).IsAssignableFrom(returnType))
-            {
-                // Tuples can be used to generate several outputs.
-                int fieldNum = 0;
-                foreach (var field in returnType.GetFields())
-                {
-                    compilation.AddFieldAccessor(this, primaryNode, field, tupleElementNames?[fieldNum++]);
-                }
-            }
-            else if (returnType != typeof(void))
-            {
-                // single value returned, just set the main node as primary output
-                compilation.Mappings[this].OutputPortMap["output"] = primaryNode;
-            }
-
-            // no output if the return type is void.
+            compilation.MapInputPorts(this, executionNode);
+            
+            return primaryValueNode;
         }
 
         /// <summary>
@@ -475,7 +506,6 @@ namespace Lattice.StandardLibrary
                             defaultType = param.ParameterType.GetElementType()!,
                             acceptMultipleEdges = true, // todo: eventually we want to be able to order these
                             secondaryPort = true,
-                            sizeInPixel = PortSizeStateRefs,
                             isRefType = true
                         };
                     }
@@ -496,7 +526,6 @@ namespace Lattice.StandardLibrary
                 {
                     defaultType = param.ParameterType,
                     acceptMultipleEdges = false,
-                    sizeInPixel = isProp ? PortSizeSideInputs : PortSizePrimaryValue,
                     vertical = !isProp,
                     hasDefault = isProp, // store a default value!
                 };
@@ -624,7 +653,9 @@ namespace Lattice.StandardLibrary
                     if (string.IsNullOrEmpty(attr.OverrideMenuFolder))
                     {
                         string @namespace = method.DeclaringType?.Namespace;
-                        path = @namespace == null ? $"{DefaultMenuFolder}/{method.Name}" : $"{@namespace}/{method.Name}";
+                        path = @namespace == null
+                            ? $"{DefaultMenuFolder}/{method.Name}"
+                            : $"{@namespace}/{method.Name}";
                     }
                     else
                     {
@@ -691,8 +722,8 @@ namespace Lattice.StandardLibrary
 
             // We allow a special exception for AnimationCurve, which is a manged object. However, there's no great
             // alternate for Burst/HPC#, so for now we just use the managed object. Eventually we come back in and 
-            // update these.
-            if (t == typeof(AnimationCurve))
+            // update these. Same for material.
+            if (t == typeof(AnimationCurve) || t == typeof(Material))
             {
                 return true;
             }

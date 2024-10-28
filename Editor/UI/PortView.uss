@@ -10,15 +10,20 @@ PortView {
     flex-shrink: 0;
 }
 
-PortView.input {
+.port--vertical {
+    height: 16px;
+}
+
+PortView.input,
+PortView.port--vertical.output {
     flex-direction: row;
 }
 
-PortView.output {
+PortView.port--horizontal.output {
     flex-direction: row-reverse;
 }
 
-PortView.Vertical #type {
+PortView.port--vertical #type {
     display: none;
 }
 
@@ -30,34 +35,63 @@ PortView > #connector {
     border-radius: 8px;
     align-items: center;
     justify-content: center;
-
-    margin-left: 4px;
-    margin-right: 4px;
+    margin-left: 0;
+    margin-right: 0;
     border-left-width: 1px;
     border-top-width: 1px;
     border-right-width: 1px;
     border-bottom-width: 1px;
 }
-
-PortView:hover > #connector {
-    border-color: #f0f0f0
-}
-
+    
 PortView > #connector > #cap {
     background-color: #212121;
-    width: 4px;
-    height: 4px;
     border-radius: 4px;
-}
-
-PortView:hover > #connector > #cap {
-    background-color: #f0f0f0;
 }
 
 PortView.port--connected > #connector > #cap {
     background-color: var(--port-color);
 }
 
+/* Hovering */
+PortView.port:hover > #connector > #cap {
+    background-color: var(--port-color);
+}
+
+/* Port sizes */
+PortView.port--vertical {
+    --port-size: 12px;
+    --port-size-cap: 8px;
+}
+
+PortView.port--horizontal {
+    --port-size: 8px;
+    --port-size-cap: 4px;
+}
+
+PortView.port--secondary {
+    --port-size: 6px;
+    --port-size-cap: 2px;
+}
+
+PortView.port > #connector {
+    width: var(--port-size);
+    height: var(--port-size);
+}
+
+PortView.port > #connector > #cap {
+    width: var(--port-size-cap);
+    height: var(--port-size-cap);
+}
+
+#TopPortContainer > PortView.input.port--vertical.port--accepts-multiple-edges > #connector {
+    width: 20px;
+}
+
+#TopPortContainer > PortView.input.port--vertical.port--accepts-multiple-edges > #connector > #cap {
+    width: 16px;
+}
+
+/* Label and fields */
 PortView > #type {
     min-width: 30px;
 }
@@ -68,70 +102,6 @@ PortView > PropertyField {
 
 PortView.port--connected > PropertyField {
     display: none;
-}
-
-.port--Boolean {
-    --port-color: #ff6d29;
-}
-
-.port--Entity {
-    --port-color: #f5de6d;
-}
-
-.port--Single {
-    --port-color: #13b8cc;
-}
-
-.port--float2,
-.port--Vector2 {
-    --port-color: #0a9abe;
-}
-
-.port--float3,
-.port--Vector3 {
-    --port-color: #007bb0;
-}
-
-.port--Int32 {
-    --port-color: #325dff;
-}
-
-.port--quaternion,
-.port--float4,
-.port--Vector4 {
-    --port-color: #8784ff;
-}
-
-.port--Matrix4x4,
-.port--float4x4,
-.port--float4x3,
-.port--float4x2,
-.port--float3x4,
-.port--float3x3,
-.port--float2x4,
-.port--float2x2 {
-    --port-color: #8FC1DF;
-}
-
-.port--Object {
-    --port-color: #80FF00;
-}
-
-.port--String {
-    --port-color: #80FF80;
-}
-
-.port--GameObject {
-    --port-color: #FF0000;
-}
-
-.port--Color,
-.port--Color32 {
-    --port-color: #da5fda;
-}
-
-.port--ITypeUnknown {
-    --port-color: #FF534A;
 }
 
 /* the nullableOverlay is a 45deg angled half-circle over the port 
@@ -179,14 +149,11 @@ PortView:hover.port--connected > #connector > #nullableOverlay {
     visibility: visible;
 }
 
-PortView.input.Vertical > IconBadge {
+/* Badges */
+PortView.input.port--vertical > IconBadge {
     translate: 1px 4px;
 }
 
-PortView.output.Vertical > IconBadge {
+PortView.output.port--vertical > IconBadge {
     translate: 1px -4px;
-}
-
-.Vertical {
-    height: 16px;
 }

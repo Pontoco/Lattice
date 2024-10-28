@@ -28,7 +28,7 @@ namespace Lattice.Editor.Utils
             // If the edge is already connected, and you drop it outside a port, remove it.
             if (!edge.isGhostEdge)
             {
-                graphView.Disconnect(edge as EdgeView);
+                graphView.Disconnect(edge as EdgeView, false);
             }
 
             // If the edge is not fully connected, and it's dropped, spawn the node create window.

@@ -4,3 +4,67 @@ GridBackground {
     --thick-line-color: rgba(51, 51, 51, 1);
     --spacing: 25;
 }
+
+.port.port--Boolean {
+    --port-color: #ff6d29;
+}
+
+.port.port--Entity {
+    --port-color: #f5de6d;
+}
+
+.port.port--Single {
+    --port-color: #13b8cc;
+}
+
+.port.port--float2,
+.port.port--Vector2 {
+    --port-color: #0a9abe;
+}
+
+.port.port--float3,
+.port.port--Vector3 {
+    --port-color: #007bb0;
+}
+
+.port.port--Int32 {
+    --port-color: #325dff;
+}
+
+.port.port--quaternion,
+.port.port--float4,
+.port.port--Vector4 {
+    --port-color: #8784ff;
+}
+
+.port.port--Matrix4x4,
+.port.port--float4x4,
+.port.port--float4x3,
+.port.port--float4x2,
+.port.port--float3x4,
+.port.port--float3x3,
+.port.port--float2x4,
+.port.port--float2x2 {
+    --port-color: #8FC1DF;
+}
+
+.port.port--Object {
+    --port-color: #80FF00;
+}
+
+.port.port--String {
+    --port-color: #80FF80;
+}
+
+.port.port--GameObject {
+    --port-color: #FF0000;
+}
+
+.port.port--Color,
+.port.port--Color32 {
+    --port-color: #da5fda;
+}
+
+.port.port--ITypeUnknown {
+    --port-color: #FF534A;
+}

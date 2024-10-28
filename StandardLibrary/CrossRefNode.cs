@@ -26,7 +26,7 @@ namespace Lattice.Nodes
         {
             get
             {
-                if (resolved == null || resolved.GUID != OtherNode)
+                if (resolved == null || resolved.FileId != OtherNode)
                 {
                     if (OtherGraph == null)
                     {
@@ -36,7 +36,7 @@ namespace Lattice.Nodes
                     {
                         // I think this is unnecessary -- OnEnable() is called when accessing and loading this reference.
                         // OtherGraph.Initialize();
-                        resolved = OtherGraph.nodes.Find(n => n.GUID == OtherNode) as LatticeNode;
+                        resolved = OtherGraph.nodes.Find(n => n.FileId == OtherNode) as LatticeNode;
                     }
                 }
 
@@ -71,7 +71,7 @@ namespace Lattice.Nodes
         public void SetTarget(BaseNode node, string port)
         {
             OtherGraph = (LatticeGraph)node.Graph;
-            OtherNode = node.GUID;
+            OtherNode = node.FileId;
             OtherPort = port;
             UpdateAllPorts();
         }

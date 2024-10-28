@@ -26,7 +26,8 @@ namespace Lattice.Editor.Views
     {
         PointerEvent,
         ShowGraphTooltipCall,
-        ForceShow
+        ForceShow,
+        RedirectNode
     }
 
     /// <summary>The default view implementation for tooltips, which just sets the text of the label.</summary>
@@ -163,8 +164,9 @@ namespace Lattice.Editor.Views
         public virtual void UpdateTooltip(GraphTooltipEventSource evtSource)
         {
             Text = source?.Tooltip ?? tooltip;
-            IsForciblyVisible = evtSource == GraphTooltipEventSource.ForceShow;
+            IsForciblyVisible = evtSource is GraphTooltipEventSource.ForceShow or GraphTooltipEventSource.RedirectNode;
             EnableInClassList(ForceEnabledClassName, IsForciblyVisible);
+            EnableInClassList("hidden", Text == "");
         }
 
         private void GenerateVisualContent(MeshGenerationContext obj)

@@ -21,13 +21,20 @@ namespace Lattice.StandardLibrary.Editor
         public override void Initialize(BaseGraphView owner, BaseNode node)
         {
             base.Initialize(owner, node);
-            LatticeNode n = (LatticeNode)NodeTarget;
-
+            
             styleSheets.Add(
                 AssetDatabase.LoadAssetAtPath<StyleSheet>(
                     "Packages/com.pontoco.lattice/Editor/UI/LiteralNodeView.uss"));
 
             AddToClassList(UssClassName);
+        }
+
+        /// <inheritdoc />
+        protected override void CreateNodeInspector()
+        {
+            base.CreateNodeInspector();
+            
+            LatticeNode n = (LatticeNode)NodeTarget;
             
             // Style property field:
             LiteralPropertyField = controlsContainer.Q<PropertyField>(nameof(LiteralNode<int>.Value));
@@ -41,13 +48,12 @@ namespace Lattice.StandardLibrary.Editor
                 title = "ICE: Node Malformed. Incorrect outputs";
             }
             
-            Type literalType = GetLiteralTypeFromNodeType(node);
+            Type literalType = GetLiteralTypeFromNodeType(n);
             
             // Add a USS class with the type.
             LiteralPropertyField.AddToClassList($"{ValueUssClassName}--{literalType.Name}");
 
             rightTitleContainer.Add(LiteralPropertyField);
-            controlsContainer.EnableInClassList(ControlsEmptyUssClassName, controlsContainer.childCount == 0);
         }
 
         /// <summary>Get the literal type associated with the node.</summary>

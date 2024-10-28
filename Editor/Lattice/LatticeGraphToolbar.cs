@@ -42,12 +42,14 @@ namespace Lattice.Editor.Views
 
         private readonly List<ToolbarButtonData> leftButtonDatas = new List<ToolbarButtonData>();
         private readonly List<ToolbarButtonData> rightButtonDatas = new List<ToolbarButtonData>();
-        protected LatticeGraphView graphView;
+        private readonly LatticeGraphView graphView;
+        private readonly LatticeGraphWindow window;
 
-        public LatticeGraphToolbar(LatticeGraphView graphView)
+        public LatticeGraphToolbar(LatticeGraphView graphView, LatticeGraphWindow window)
         {
             name = "ToolbarView";
             this.graphView = graphView;
+            this.window = window;
 
             leftButtonDatas.Clear();
             rightButtonDatas.Clear();
@@ -68,6 +70,8 @@ namespace Lattice.Editor.Views
             }, left: false);
 
             AddButton("Select In Project", () => EditorGUIUtility.PingObject(graphView.Graph), false);
+            
+            AddButton("Inspector", () => window.InspectorIsOpen = !window.InspectorIsOpen, false);
 
             // Entity selectors.
             AddCustom(() =>

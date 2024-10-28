@@ -53,13 +53,13 @@ namespace Lattice.Editor.Views
         {
             foreach (var nodeGUID in group.innerNodeGUIDs.ToList())
             {
-                if (!owner.Graph.NodesPerGuid.ContainsKey(nodeGUID))
+                if (!owner.Graph.NodesPerFileId.ContainsKey(nodeGUID))
                 {
                     Debug.LogWarning("Node GUID not found: " + nodeGUID);
                     group.innerNodeGUIDs.Remove(nodeGUID);
                     continue;
                 }
-                var node = owner.Graph.NodesPerGuid[nodeGUID];
+                var node = owner.Graph.NodesPerFileId[nodeGUID];
                 var nodeView = owner.NodeViewsPerNode[node];
 
                 AddElement(nodeView);
@@ -78,9 +78,9 @@ namespace Lattice.Editor.Views
                     continue;
                 }
 
-                if (!group.innerNodeGUIDs.Contains(node.NodeTarget.GUID))
+                if (!group.innerNodeGUIDs.Contains(node.NodeTarget.FileId))
                 {
-                    group.innerNodeGUIDs.Add(node.NodeTarget.GUID);
+                    group.innerNodeGUIDs.Add(node.NodeTarget.FileId);
                 }
             }
             base.OnElementsAdded(elements);
@@ -95,7 +95,7 @@ namespace Lattice.Editor.Views
                 {
                     if (elem is BaseNodeView nodeView)
                     {
-                        group.innerNodeGUIDs.Remove(nodeView.NodeTarget.GUID);
+                        group.innerNodeGUIDs.Remove(nodeView.NodeTarget.FileId);
                     }
                 }
             }

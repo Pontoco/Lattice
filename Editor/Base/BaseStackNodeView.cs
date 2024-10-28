@@ -49,9 +49,9 @@ namespace Lattice.Editor.Views
             // Sanitize the GUID list in case some nodes were removed
             stackNode.nodeGUIDs.RemoveAll(nodeGUID =>
             {
-                if (owner.Graph.NodesPerGuid.ContainsKey(nodeGUID))
+                if (owner.Graph.NodesPerFileId.ContainsKey(nodeGUID))
                 {
-                    var node = owner.Graph.NodesPerGuid[nodeGUID];
+                    var node = owner.Graph.NodesPerFileId[nodeGUID];
                     var view = owner.NodeViewsPerNode[node];
                     view.AddToClassList("stack-child__" + i);
                     i++;
@@ -79,17 +79,17 @@ namespace Lattice.Editor.Views
             {
                 var index = Mathf.Clamp(proposedIndex, 0, stackNode.nodeGUIDs.Count - 1);
 
-                int oldIndex = stackNode.nodeGUIDs.FindIndex(g => g == nodeView.NodeTarget.GUID);
+                int oldIndex = stackNode.nodeGUIDs.FindIndex(g => g == nodeView.NodeTarget.FileId);
                 if (oldIndex != -1)
                 {
-                    stackNode.nodeGUIDs.Remove(nodeView.NodeTarget.GUID);
+                    stackNode.nodeGUIDs.Remove(nodeView.NodeTarget.FileId);
                     if (oldIndex != index)
                     {
                         onNodeReordered?.Invoke(nodeView, oldIndex, index);
                     }
                 }
 
-                stackNode.nodeGUIDs.Insert(index, nodeView.NodeTarget.GUID);
+                stackNode.nodeGUIDs.Insert(index, nodeView.NodeTarget.FileId);
             }
 
             return accept;
@@ -102,7 +102,7 @@ namespace Lattice.Editor.Views
             {
                 if (elem is BaseNodeView nodeView)
                 {
-                    stackNode.nodeGUIDs.Remove(nodeView.NodeTarget.GUID);
+                    stackNode.nodeGUIDs.Remove(nodeView.NodeTarget.FileId);
                 }
             }
             return base.DragLeave(evt, selection, leftTarget, dragSource);

@@ -3,19 +3,6 @@
     min-height: var(--min-height);
 }
 
-#contents > #controls {
-    background-color: rgba(63, 63, 63, 0.8);
-    padding: 0 4px 4px;
-}
-
-#contents > #controls.node__controls--empty {
-    display: none;
-}
-
-.collapsed #contents > #controls {
-    display: none;
-}
-
 #settings-button {
     align-self: stretch;
     border-width: 0px;
@@ -271,4 +258,21 @@
     justify-content: center;
     flex-grow: 1;
     margin-right: 6px;
+}
+
+.node__nullable-indicator {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    --stripe-color: #343434;
+    --stripe-width: 10;
+    --stripe-spacing: 10;
+    --stripe-angle: 45;
+}
+
+.node.node--nullable-lifted .node__nullable-indicator {
+    display: flex;
 }

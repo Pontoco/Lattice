@@ -3,14 +3,6 @@
     width: 35px;
 }
 
-.node__controls {
-    flex-direction: row;
-}
-
 .node__select-node-button {
     margin-left: 25px;
-}
-
-#contents > #controls {
-    padding: 2px 0;
 }

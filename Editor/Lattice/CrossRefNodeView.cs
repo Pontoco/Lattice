@@ -43,11 +43,9 @@ namespace Lattice.Editor.Views
             gotoNode.AddManipulator(new GraphTooltipManipulator { Tooltip = "Go to..." });
 
             UpdateText();
-            controlsContainer.Add(selectNode);
-            controlsContainer.Add(gotoNode);
-            controlsContainer.RemoveFromClassList(ControlsEmptyUssClassName);
-            
-            titleContainer.style.display = DisplayStyle.None;
+            rightTitleContainer.Add(selectNode);
+            rightTitleContainer.Add(gotoNode);
+            titleNameContainer.style.display = DisplayStyle.None;
         }
 
         public void UpdateText()

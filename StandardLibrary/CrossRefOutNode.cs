@@ -55,7 +55,7 @@ namespace Lattice.Nodes
                 return;
             }
             
-            var referencedNode = otherNodeMapping.OutputPortMap[OtherPort];
+            var referencedNode = otherNodeMapping.OutputPortMap[OtherPort].Node;
             Assert.IsNotNull(referencedNode);
 
             compilation.Mappings[this].Nodes[0].AddInput("input", referencedNode);

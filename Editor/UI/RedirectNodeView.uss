@@ -1,0 +1,126 @@
+﻿RedirectNodeView.node {
+    min-width: 34px;
+    min-height: 34px;
+    /* If this has an odd size then the terrible snapping behaviour
+       can snap at 0.5px increments, which causes everything to become
+       unaligned. By making this an even size and adding these margins
+       we can correctly center this on an edge without it snapping poorly.*/
+    margin: 0 1px 1px 0;
+    align-items: center;
+    justify-content: center;
+}
+
+#RightTitleContainer,
+#title-button-container,
+#sub-title-label {
+    display: none;
+}
+
+#TopPortsAll,
+#BottomPortsAll {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: auto;
+    max-width: none;
+    max-height: none;
+}
+
+#TopPortsAll {
+    top: 10px;
+    height: 0;
+}
+
+#BottomPortsAll {
+    bottom: 12px;
+    height: 0;
+}
+
+#TopPortContainer,
+#BottomPortContainer {
+    height: 1px;
+}
+
+PortView.port {
+    visibility: hidden;
+    border-width: 0;
+    max-width: 1px;
+    max-height: 1px;
+    min-width: 1px;
+    min-height: 1px;
+}
+
+PortView.port > #connector {
+    max-width: 0;
+    max-height: 0;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    border-width: 0;
+}
+
+.node__title-name-container {
+    margin: 0;
+}
+
+#title {
+    position: absolute;
+    background-color: transparent;
+    right: 5px;
+    translate: 100% 0;
+    min-height: 20px;
+}
+
+#title #title-label {
+    margin: 0;
+}
+
+RedirectNodeView:checked #node-border {
+    background-color: #44C0FF;
+}
+
+#node-border {
+    background-color: var(--port-color);
+    width: 14px;
+    height: 14px;
+    border-radius: 10px;
+}
+
+#selection-border {
+    border-radius: 12px;
+    width: 18px;
+    height: 18px;
+    left: 7px;
+    top: 7px;
+}
+
+.redirect-node__port-picker {
+    display: none;
+    position: absolute;
+}
+
+.redirect-node__port-picker__inner {
+    background-image: url("/Packages/com.pontoco.lattice/Editor/Images/Add.png");
+    height: 10px;
+    width: 10px;
+    margin: 3px;
+    border-radius: 5px;
+}
+
+
+RedirectNodeView.node:hover .redirect-node__port-picker {
+    display: flex;
+}
+
+.redirect-node__port-picker:hover > .redirect-node__port-picker__inner {
+    background-color: white;
+    -unity-background-image-tint-color: black;
+}
+
+.redirect-node__port-picker--top {
+    top: -10px;
+}
+
+.redirect-node__port-picker--bottom {
+    bottom: -10px;
+}

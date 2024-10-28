@@ -44,6 +44,21 @@ namespace Lattice.Editor.Manipulators
             target.UnregisterCallback<KeyDownEvent>(OnKeyDown);
         }
 
+        /// <summary>Try manually starting an edge connection drag without the manipulator firing the event.</summary>
+        public bool TryStartDragging(MouseDownEvent e)
+        {
+            bool prev = active;
+            OnMouseDown(e);
+            bool started = active && prev != active;
+            if (started)
+            {
+                // mouseDownPosition should be in local space,
+                // but if this event was from another object we need to convert it.
+                mouseDownPosition = ((VisualElement)e.currentTarget).ChangeCoordinatesTo(target, e.localMousePosition);
+            }
+            return started;
+        }
+
         private void OnMouseDown(MouseDownEvent e)
         {
             if (active)
@@ -57,8 +72,7 @@ namespace Lattice.Editor.Manipulators
                 return;
             }
 
-            Port graphElement = target as Port;
-            if (graphElement == null)
+            if (target is not Port graphElement)
             {
                 return;
             }

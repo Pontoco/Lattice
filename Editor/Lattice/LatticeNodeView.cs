@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using JetBrains.Annotations;
 using Lattice.Base;
+using Lattice.Editor.Manipulators;
 using Lattice.Editor.Utils;
 using Lattice.IR;
 using Lattice.Nodes;
@@ -32,13 +33,15 @@ namespace Lattice.Editor.Views
     [NodeCustomEditor(typeof(LatticeNode))]
     public class LatticeNodeView : BaseNodeView
     {
+        public const string LiftedToNullableUssClassName = UssClassName + "--nullable-lifted";
+
         public LatticeNode Target => (LatticeNode)base.NodeTarget;
 
         // Whether to show the output value and state under the node.
         private bool ShowDebugValue
         {
-            get => EditorPrefs.GetBool($"DebugValue:{NodeTarget.GUID}");
-            set => EditorPrefs.SetBool($"DebugValue:{NodeTarget.GUID}", value);
+            get => EditorPrefs.GetBool($"DebugValue:{NodeTarget.Guid}");
+            set => EditorPrefs.SetBool($"DebugValue:{NodeTarget.Guid}", value);
         }
 
         public bool IsShowingDebugValue => debugContainer.style.display == DisplayStyle.Flex;
@@ -47,6 +50,29 @@ namespace Lattice.Editor.Views
         private bool showCompileData; // Whether to show the compilation metadata under the node.
         private readonly Label compileInfo = new(); // Show the value of the node
         private readonly Label debugNodeValue = new(); // Show the node metadata like qualifiers
+
+        // ReSharper disable once MemberCanBeProtected.Global
+        public LatticeNodeView()
+        {
+            // Dragging support by clicking on IconBadge Errors:
+            // This partially exists to improve RedirectNode edge creation,
+            // because the port creation interface is hidden under the badges.
+            // It's also nice UX in general!
+            RegisterCallback<MouseDownEvent, LatticeNodeView>(static (e, args) =>
+            {
+                if (e.clickCount != 1 || e.target is not IconBadge badge)
+                {
+                    return;
+                }
+                PortView view = args.Query<PortView>().Where(p => p.HasMessageView(badge)).First();
+                if (view == null)
+                {
+                    return;
+                }
+                var connector = (EdgeConnectionMouseManipulator)view.edgeConnector;
+                connector.TryStartDragging(e);
+            }, this);
+        }
 
         /// <inheritdoc />
         public override void Initialize(BaseGraphView owner, BaseNode node)
@@ -60,7 +86,7 @@ namespace Lattice.Editor.Views
 
             if (Target.ActionPorts.Count > 0)
             {
-                this.Q("title").style.backgroundColor = new Color(0.0509f, 0.2784f, 0.2941f);
+                this.Q(TitleContainerName).style.backgroundColor = new Color(0.0509f, 0.2784f, 0.2941f);
             }
 
             compileDataContainer.Add(compileInfo);
@@ -68,10 +94,15 @@ namespace Lattice.Editor.Views
             debugNodeValue.text = "Node not executed.";
 
             // If the graph is compiled and has this node in it.
-            GraphCompilation c = GraphCompiler.RecompileIfNeeded();
-            if (c.SourceGraphs.Contains((LatticeGraph)Owner.Graph))
+            try
             {
-                UpdateCompilationInfo(c);
+                GraphCompilation c = GraphCompiler.RecompileIfNeeded();
+                if (c.SourceGraphs.Contains((LatticeGraph)Owner.Graph))
+                {
+                    UpdateCompilationInfo(c);
+                }
+            } catch (Exception _) {
+                //ignored
             }
 
             styleSheets.Add(
@@ -94,11 +125,39 @@ namespace Lattice.Editor.Views
             mainContainer.Add(compileDataContainer);
         }
 
+        /// <inheritdoc />
+        public override void OnSelected()
+        {
+            base.OnSelected();
+            Owner.NodeSelectionChanged();
+        }
+
+        /// <inheritdoc />
+        public override void OnUnselected()
+        {
+            base.OnUnselected();
+            Owner.NodeSelectionChanged();
+        }
+
         public override bool RefreshAllPorts()
         {
             bool result = base.RefreshAllPorts();
 
-            GraphCompilation compilation = GraphCompiler.AddAndRecompileIfNeeded((LatticeGraph)Owner.Graph);
+            GraphCompilation compilation = null;
+            try
+            {
+                compilation = GraphCompiler.AddAndRecompileIfNeeded((LatticeGraph)Owner.Graph);
+            }
+            catch (Exception _)
+            {
+                // ignored
+            }
+
+            bool liftedToNullable =
+                compilation != null &&
+                compilation.Mappings.TryGetValue((LatticeNode)NodeTarget, out var mapping) &&
+                mapping.PrimaryNode.Node is FunctionIRNode fNode && fNode.NullableLiftedPorts.Any();
+            EnableInClassList(LiftedToNullableUssClassName, liftedToNullable);
 
             // Update output port view types from the compilation.
             for (int i = 0, portIndex = 0; i < OutputPortViews.Count; i++)
@@ -112,7 +171,10 @@ namespace Lattice.Editor.Views
 
                 PortData outputPort = Target.OutputPorts[portIndex++].portData;
                 outputPortView.UpdatePortView(outputPort);
-                outputPortView.SetTypeFromCompilation(compilation);
+                if (compilation != null)
+                {
+                    outputPortView.SetTypeFromCompilation(compilation);
+                }
             }
 
             return result;
@@ -130,8 +192,15 @@ namespace Lattice.Editor.Views
             }
 
             // Update port type from compilation..
-            GraphCompilation compilation = GraphCompiler.AddAndRecompileIfNeeded((LatticeGraph)Owner.Graph);
-            p.SetTypeFromCompilation(compilation);
+            try
+            {
+                GraphCompilation compilation = GraphCompiler.AddAndRecompileIfNeeded((LatticeGraph)Owner.Graph);
+                p.SetTypeFromCompilation(compilation);
+            }
+            catch (Exception _)
+            {
+                Debug.LogError("Couldn't set type of port. Compilation failed.");
+            }
             return p;
         }
 
@@ -145,7 +214,7 @@ namespace Lattice.Editor.Views
                 return;
             }
 
-            IRNode primaryNode = mapping.PrimaryNode;
+            IRNode primaryNode = mapping.PrimaryNode.Node;
             Metadata compileData = compilation.CompileNode(primaryNode);
 
             string compileErrorText = null;
@@ -202,7 +271,11 @@ namespace Lattice.Editor.Views
 
             b.Append("ExecuteAfter: ").Append(compileData.ExecutionPhase).AppendLine();
             b.Append("Type: ").AppendLine(GraphUtils.GetReadableTypeName(compileData.OutputType));
-            b.Append("Nullable Ports: (").Append(string.Join(",", compileData.NullableLiftedPorts)).AppendLine(")");
+            if (primaryNode is FunctionIRNode f)
+            {
+                b.Append("Nullable Ports: (").Append(string.Join(",", f.NullableLiftedPorts)).AppendLine(")");
+            }
+
             compileInfo.text = b.ToString();
         }
 
@@ -236,7 +309,7 @@ namespace Lattice.Editor.Views
                 return;
             }
 
-            IRNode primaryNode = execution.Graph.Mappings[Target].PrimaryNode;
+            IRNode primaryNode = execution.Graph.Mappings[Target].PrimaryNode.Node;
             if (!execution.Graph.MetadataDb.TryGetValue(primaryNode, out Metadata compileData))
             {
                 debugNodeValue.text = "Node was not compiled.";
@@ -260,8 +333,8 @@ namespace Lattice.Editor.Views
 
                 if (Target.StateType != null)
                 {
-                    if (execution.DebugData.Values.TryGetValue(entity, execution.Graph.GetState(Target),
-                            out object state))
+                    IRNode stateDebugNode = execution.Graph.Mappings[Target].StateDebugNode!.Node;
+                    if (execution.DebugData.Values.TryGetValue(entity, stateDebugNode, out object state))
                     {
                         debugNodeValue.text += "\nState: " + ObjectToDebugString(state);
                     }
@@ -410,7 +483,7 @@ namespace Lattice.Editor.Views
                 return;
             }
 
-            Debug.Log($"References to node [{Target}]: (Click for info)\n"+b);
+            Debug.Log($"References to node [{Target}]: (Click for info)\n" + b);
         }
     }
 }

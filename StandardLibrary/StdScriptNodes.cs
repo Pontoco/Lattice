@@ -19,9 +19,9 @@ namespace Lattice.StandardLibrary
         }
 
         /// <summary>Evaluates an animation curve using the input float. Useful for simple animations and interpolation.</summary>
-        public static float SimpleAnimate([Prop] AnimationCurve curve, float time)
+        public static float SimpleAnimate([Prop] AnimationCurve curve, float time, float outputScale = 1)
         {
-            return curve.Evaluate(time);
+            return curve.Evaluate(time) * outputScale;
         }
 
         /// <summary>
@@ -65,9 +65,17 @@ namespace Lattice.StandardLibrary
         }
 
         /// <summary>Splits a LocalTransform into its fields.</summary>
-        public static (float3 position, quaternion rotation) SplitLocalTransform(LocalTransform transform)
+        public static (float3 position, quaternion rotation, float scale) SplitLocalTransform(LocalTransform transform)
         {
-            return (transform.Position, transform.Rotation);
+            return (transform.Position, transform.Rotation, transform.Scale);
+        }
+        
+        /// <summary>
+        /// Splits the RigidTransform into its fields.
+        /// </summary>
+        public static (float3 position, quaternion rotation) SplitRigidTransform(RigidTransform transform)
+        {
+            return (transform.pos, transform.rot);
         }
     }
 
@@ -97,10 +105,45 @@ namespace Lattice.StandardLibrary
 
             return falseThisFrame;
         }
+
+        /// <summary>The logical 'not' operator.</summary>
+        public static bool Not(bool value)
+        {
+            return !value;
+        }
+    }
+    
+    /// <summary>
+    /// General math nodes.
+    /// </summary>
+    [LatticeNodes("Lattice/Math")]
+    public static class Math {
+        /// <summary>
+        /// Scales a 2D value by a number.
+        /// </summary>
+        public static float2 Scale(float2 input, [Prop] float factor)
+        {
+            return factor * input;
+        }
+        
+        /// <summary>
+        /// Stores a 2D position value, which can be updated each frame by an input velocity.
+        /// </summary>
+        public static float2 Position(this ref float2 state, float2 velocity = new())
+        {
+            state += velocity;
+            return state;
+        }
+        
+        public static float3 ToFloat3(float2 input)
+        {
+            return new float3(input.x, input.y, 0);
+        }
     }
 
     /// <summary>
-    /// Nodes for splitting/makin some simple types. Once we have a general split/make node, these will be obsolete. Note: All of these nodes can be defined yourself.
+    ///     Nodes for splitting/makin some simple types. Once we have a general split/make node, these will be obsolete.
+    ///     Note: All of these nodes can be defined yourself.
     /// </summary>
     [LatticeNodes("Lattice/Constant/Structs")]
     public static class StdStructNodes
@@ -138,6 +181,42 @@ namespace Lattice.StandardLibrary
         public static (float x, float y) SplitFloat2(float2 value)
         {
             return (value.x, value.y);
+        }
+    }
+
+    /// <summary>
+    ///     Nodes for splitting/makin some simple types. Once we have a general split/make node, these will be obsolete.
+    ///     Note: All of these nodes can be defined yourself.
+    /// </summary>
+    [LatticeNodes("Lattice/Input")]
+    public static class Input
+    {
+        /// <summary>Returns a 2D vector pointing in the direction of the current wasd input. ie. (1, 0)</summary>
+        public static float2 WasdInput()
+        {
+            var w = UnityEngine.Input.GetKey(KeyCode.W);
+            var a = UnityEngine.Input.GetKey(KeyCode.A);
+            var s = UnityEngine.Input.GetKey(KeyCode.S);
+            var d = UnityEngine.Input.GetKey(KeyCode.D);
+
+            float2 result = new();
+            result.y += w ? 1 : 0;
+            result.y -= s ? 1 : 0;
+            result.x += d ? 1 : 0;
+            result.x -= a ? 1 : 0;
+
+            return result;
+        }
+
+        /// <summary>
+        ///     Returns true while the key is held. Use <see cref="StdLogicNodes.BecomesTrue" /> or
+        ///     <see cref="StdLogicNodes.BecomesFalse" /> if you need to know if a key was pressed this frame.
+        /// </summary>
+        /// <param name="code"></param>
+        /// <returns></returns>
+        public static bool KeyIsDown([Prop] KeyCode code)
+        {
+            return UnityEngine.Input.GetKey(code);
         }
     }
 }

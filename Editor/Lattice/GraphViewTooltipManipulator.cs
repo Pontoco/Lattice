@@ -5,6 +5,7 @@ using System.Reflection;
 using JetBrains.Annotations;
 using Lattice.Editor.Events;
 using Lattice.Editor.Manipulators;
+using Lattice.Nodes;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -283,12 +284,14 @@ namespace Lattice.Editor.Views
             private void SetStateForTooltipsUnderRoot<TTarget>(VisualElement root, bool show)
                 where TTarget : VisualElement, IHasGraphTooltip
             {
+                var source = root is RedirectNodeView ? GraphTooltipEventSource.RedirectNode : GraphTooltipEventSource.ForceShow;
+                
                 root?.Query<TTarget>().ForEach(e =>
                 {
                     if (show)
                     {
                         tempTooltipProvider.Update(e);
-                        ShowSingleTooltip(tempTooltipProvider, GraphTooltipEventSource.ForceShow);
+                        ShowSingleTooltip(tempTooltipProvider, source);
                     }
                     else
                     {

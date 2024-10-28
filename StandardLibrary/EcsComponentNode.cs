@@ -4,10 +4,13 @@ using System.Linq;
 using System.Reflection;
 using Lattice.Base;
 using Lattice.IR;
+using Lattice.IR.Nodes;
+using Lattice.StandardLibrary;
 using Lattice.Utils;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Pool;
 
 namespace Lattice.Nodes
 {
@@ -77,8 +80,7 @@ namespace Lattice.Nodes
                 yield return new PortData(PortComponentInput, optional:true)
                 {
                     acceptMultipleEdges = false,
-                    defaultType = ComponentType.type,
-                    sizeInPixel = 10,
+                    defaultType = ComponentType.type
                 };
             }
 
@@ -130,8 +132,7 @@ namespace Lattice.Nodes
                 yield return new PortData("value_out")
                 {
                     acceptMultipleEdges = true,
-                    defaultType = ComponentType.type,
-                    sizeInPixel = 10,
+                    defaultType = ComponentType.type
                 };
             }
 
@@ -154,54 +155,9 @@ namespace Lattice.Nodes
             manager.SetComponentData(entity, componentData);
         }
 
-        // Generates the following code, but without needing reflection!
-        //  void WriteIComponentField(EntityManager em, Entity entity, {FieldType} value) {
-        //      object currentValue = manager.GetComponentData<T>(e);
-        //      field.SetValue(currentValue, fieldData);
-        //      manager.SetComponentData(e, (T)currentValue);
-        //  }
-        /// <summary>Generates a static method that sets the given field on the ECS Component.</summary>
-        public MethodSignature CreateFieldWriteMethod(FieldInfo field, GraphCompilation compilation)
-        {
-            Assert.IsNotNull(ComponentType.type);
-            return compilation.GenerateStaticMethodCached($"WriteIComponentField_{ComponentType.type.Namespace}.{ComponentType.type.Name}.{field.Name}", typeof(void),
-                new[] { (typeof(EntityManager), "em"), (typeof(Entity), "entity"), (field.FieldType, "value") }, new [] {ComponentType.type},  emit =>
-                {
-                    // Load the arguments and get the component struct from EntityManager with Entity.
-                    emit.Ldarga(0); // Load EntityManager onto the stack
-                    emit.Ldarg(1); // Load Entity onto the stack
-                    emit.Call(
-                        typeof(EntityManager).GetMethod(nameof(EntityManager.GetComponentData),
-                                                 new[] { typeof(Entity) })!
-                                             .MakeGenericMethod(ComponentType
-                                                 .type)); // Callvirt because we're calling an instance method and EntityManager could be null.
-
-                    // Write to the field.
-                    var componentLocal = emit.DeclareLocal(ComponentType.type, "component");
-                    emit.Stloc(componentLocal); // Store return value in local. 
-                    emit.Ldloca(componentLocal); // Load a pointer to the local, so we can set it.
-                    emit.Ldarg(2); // Load field value.
-                    emit.Stfld(field); // Write the value into the field.
-
-                    // Set the value back to ECS.
-                    emit.Ldarga(0); // Load EntityManager onto the stack
-                    emit.Ldarg(1); // Load Entity onto the stack
-                    emit.Ldloc(componentLocal); // Load the modified component.
-                    emit.Call(
-                        typeof(EntityManager).GetMethod(nameof(EntityManager.SetComponentData),
-                            new[] { typeof(Entity), Type.MakeGenericMethodParameter(0) })!.MakeGenericMethod(
-                            ComponentType
-                                .type)); // Callvirt because we're calling an instance method and EntityManager could be null.
-
-                    // no return value.
-                    emit.Ret();
-                });
-        }
-
         // Called via reflection. We use this extra helper method because EntityManager.GetComponentData has
         // other overloads, which makes it hard to access via reflection.
-        // The barrier is used to wait for all write nodes to complete.
-        public static T GetComponent<T>(EntityManager manager, Entity entity, Unit barrier)
+        public static T GetComponent<T>(EntityManager manager, Entity entity)
             where T : unmanaged, IComponentData
         {
             return manager.GetComponentData<T>(entity);
@@ -224,32 +180,31 @@ namespace Lattice.Nodes
             //      - one node to read the entire component
             //      - field accessors for each field on the component
 
-            var barrier = compilation.AddNode(this, "WaitForWrite", new BarrierIRNode());
-
             // Add a passthrough node if we have an entity input, so that both read and write can access it.
             IRNode entityInput;
             if (GetPort(PortEntityInput).GetEdges().Any())
             {
                 entityInput = compilation.AddNode(this, "EntityInput", CoreIRNodes.Identity(typeof(Entity)));
-                compilation.MapInputPort(this, PortEntityInput, entityInput, entityInput.Ports.Keys.ElementAt(0));
+                compilation.MapInputPort(this, PortEntityInput, entityInput, "value");
             }
             else
             {
                 // Use the default entity node if none is passed.
-                entityInput = compilation.GraphNodes.GetValues(Graph).Single(n => n is EntityIRNode);
+                entityInput = compilation.GetImplicitEntity(Graph);
                 compilation.MapInputPort(this, PortEntityInput, null);
             }
 
             // Write Stage:
             // Collects all of the inputs to the node and writes them into the ECS component.
             NodePort writeComponentPort = GetPort("componentData");
+            using var _ = CollectionPool<List<IRNode>, IRNode >.Get(out var writers);
             if (writeComponentPort != null && writeComponentPort.GetEdges().Count > 0)
             {
                 var writeFull = compilation.AddNode(this, "ECSWrite",
                     FunctionIRNode.FromStaticMethod<EcsComponentNode>(nameof(SetComponent), ComponentType.type));
 
                 writeFull.AddInput("entity", entityInput);
-                barrier.AddInput(BarrierIRNode.PortWriters, writeFull);
+                writers.Add(writeFull);
 
                 compilation.MapInputPort(this, "componentData", writeFull);
             }
@@ -265,11 +220,9 @@ namespace Lattice.Nodes
                 string port = field.Name + "_in";
                 if (GetPort(port).GetEdges().Any())
                 {
-                    var writeField = compilation.AddNode(this, $"WriteField_{field.Name}",
-                        FunctionIRNode.CreateLazy(CreateFieldWriteMethod(field, compilation)));
-
+                    var writeField = compilation.AddNode(this, $"WriteField_{field.Name}", new WriteIComponentNode(field));
                     writeField.AddInput("entity", entityInput);
-                    barrier.AddInput(BarrierIRNode.PortWriters, writeField);
+                    writers.Add(writeField);
 
                     compilation.MapInputPort(this, port, writeField, "value");
                 }
@@ -290,18 +243,22 @@ namespace Lattice.Nodes
             read.SystemPhase = SystemView?.type;
 
             read.AddInput("entity", entityInput);
-            read.AddInput("barrier", barrier);
+            
+            foreach (var writer in writers)
+            {
+                read.AddInput(IRNode.BarrierPort, writer);
+            }
 
             // An edge is spawned between the two stages, but the value is unused. It's just important to order the side effects
             // of the two phases.
 
             compilation.SetPrimaryNode(this, read);
-            compilation.Mappings[this].OutputPortMap["value_out"] = read;
+            compilation.Mappings[this].OutputPortMap["value_out"] = compilation.GetNodeRef(read);
 
             // Every field on the component also gets a port so you can read from them individually.
             foreach (var field in componentFields)
             {
-                var fieldNode = compilation.AddFieldAccessor(this, read, field, field.Name + "_out");
+                var fieldNode = compilation.AddFieldAccessor(this, read, field.Name, field.Name + "_out");
 
                 if (field.FieldType == typeof(Entity))
                 {

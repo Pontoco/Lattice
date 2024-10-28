@@ -2,8 +2,9 @@
 using System.Linq;
 using JetBrains.Annotations;
 using Lattice.Base;
+using Lattice.Editor.Utils;
 using Lattice.Editor.Views;
-using Lattice.Utils;
+using Lattice.Nodes;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -14,8 +15,10 @@ namespace Lattice.Editor
     /// <summary>The "Create Node" menu implementation.</summary>
     public sealed class CreateNodeMenuProvider : SearchMenuProvider<INodeTemplate>
     {
-        protected override string Title => "Create Node";
+        internal const string TitleText = "Create Node";
         
+        protected override string Title => TitleText;
+
         private LatticeGraph Graph
         {
             set
@@ -28,9 +31,10 @@ namespace Lattice.Editor
                 RegenerateEntries = true;
             }
         }
-        
+
         private LatticeGraph graph;
         private readonly LatticeGraphView graphView;
+
         [CanBeNull]
         private PortView sourcePort;
 
@@ -39,7 +43,7 @@ namespace Lattice.Editor
             Graph = graphView.Graph;
             this.graphView = graphView;
         }
-        
+
         /// <summary>Shows the node creation window.</summary>
         /// <param name="mousePosition">The position to show the menu and create any nodes under.</param>
         /// <param name="port">An optional port to filter results, and connect to once a node is created.</param>
@@ -57,11 +61,20 @@ namespace Lattice.Editor
         /// <inheritdoc />
         protected override void AddSearchEntries(List<SearchEntry> searchEntries)
         {
+            if (sourcePort != null)
+            {
+                searchEntries.Add(new SearchEntry
+                {
+                    Item = new BasicNodeBuilder(typeof(RedirectNode)),
+                    Title = new[] { "Redirect" }
+                });
+            }
+            
             // Build up data structure containing group & title as an array of strings (the last one is the actual title) and associated node type.
             foreach ((string path, INodeTemplate builder) in graphView.FilterCreateNodeMenuEntries().OrderBy(k => k.path))
             {
                 string[] title = path.Split('/');
-                
+
                 // Ensure that there's no blank elements in the title path.
                 for (int i = 0; i < title.Length; i++)
                 {
@@ -86,7 +99,7 @@ namespace Lattice.Editor
                 Title = title
             });
         }
-        
+
         /// <summary>Once an entry is selected, this creates the node and connects any required edges.</summary>
         protected override void OnSearcherSelectEntry(SearchEntry searchEntry, Vector2 windowMousePosition)
         {
@@ -94,14 +107,14 @@ namespace Lattice.Editor
             {
                 return;
             }
-            
+
             Vector2 graphMousePosition = graphView.contentViewContainer.WorldToLocal(windowMousePosition);
-            
+
             Undo.RegisterCompleteObjectUndo(graphView.Graph, "Added " + searchEntry.Item.NodeType);
 
             BaseNode node = searchEntry.Item.Build();
             node.OnNodeCreated();
-            
+
             BaseNodeView view = graphView.AddNode(node);
             view.SetPosition(graphMousePosition);
 
@@ -113,14 +126,14 @@ namespace Lattice.Editor
                     // Get the first valid port.
                     if (TryGetFirstValidPort(view.OutputPortViews, sourcePort, out PortView connectTo))
                     {
-                        graphView.CreateNewEdge(sourcePort, connectTo);
+                        graphView.CreateNewEdge(connectTo, sourcePort);
                     }
                 }
                 else
                 {
                     if (TryGetFirstValidPort(view.InputPortViews, sourcePort, out PortView connectTo))
                     {
-                        graphView.CreateNewEdge(connectTo, sourcePort);
+                        graphView.CreateNewEdge(sourcePort, connectTo);
                     }
                 }
 
@@ -130,6 +143,13 @@ namespace Lattice.Editor
                     {
                         connectTo = null;
                         return false;
+                    }
+
+                    if (node is RedirectNode)
+                    {
+                        // Port types aren't initialized for RedirectNodes until edges are connected.
+                        connectTo = views.FirstOrDefault();
+                        return connectTo != null;
                     }
 
                     // Get the first port that we can assign this port's type to.

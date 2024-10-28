@@ -147,5 +147,8 @@ namespace Lattice.Editor
                 style.color = color;
             }
         }
+
+        /// <summary>True if the badge is contained in this collection.</summary>
+        public bool Contains(IconBadge badge) => badges.Contains(badge);
     }
 }

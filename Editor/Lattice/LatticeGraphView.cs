@@ -51,7 +51,6 @@ namespace Lattice.Editor.Views
                 AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/com.pontoco.lattice/Editor/UI/LatticeGraphView.uss"));
 
             SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
-            this.AddManipulator(new ContentDragger());
 
             RegisterCallback<AttachToPanelEvent>(_ =>
             {

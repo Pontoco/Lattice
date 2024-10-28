@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEditor.Searcher;
@@ -60,6 +61,7 @@ namespace Lattice.Editor
                 RegenerateEntries = false;
             }
 
+            AdjustMinimumSearcherWindowHeight();
             SearcherWindow.Show(
                 EditorWindow ?? EditorWindow.focusedWindow,
                 LoadSearchWindow(),
@@ -82,6 +84,23 @@ namespace Lattice.Editor
             Alignment = new SearcherWindow.Alignment(SearcherWindow.Alignment.Vertical.Top, SearcherWindow.Alignment.Horizontal.Center);
             Rect bounds = element.worldBound;
             Show(new Vector2(bounds.center.x, bounds.y));
+        }
+
+        private static void AdjustMinimumSearcherWindowHeight()
+        {
+            Vector2 minimumSize = LatticePreferences.instance.MinimumSearchWindowSize;
+            FieldInfo sizeField = typeof(SearcherWindow).GetField("s_Size", BindingFlags.Static | BindingFlags.NonPublic);
+            try
+            {
+                Vector2 size = (Vector2)sizeField!.GetValue(null);
+                size.x = Mathf.Max(size.x, minimumSize.x);
+                size.y = Mathf.Max(size.y, minimumSize.y);
+                sizeField.SetValue(null, size);
+            }
+            catch
+            {
+                Debug.LogWarning("Internal code relating to minimum searcher window size has changed, please report an issue with Lattice.");
+            }
         }
 
         private void GenerateSearchEntries()

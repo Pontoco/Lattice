@@ -113,7 +113,7 @@ namespace Lattice.Editor.Tools
 
         /// <summary>If true, nodes will execute faster, but their values will not be visible in the Lattice Window.</summary>
         private static bool disableDebug;
-        private const string DisableDebugMenu = "Lattice/Options/Disable Debug";
+        public const string DisableDebugMenu = "Lattice/Options/Disable Debug";
 
         [MenuItem(DisableDebugMenu)]
         private static void PerformAction()

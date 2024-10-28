@@ -1,0 +1,50 @@
+﻿.port-tag {
+    position: absolute;
+}
+
+.port-tag__container {
+    color: #D2D2D2;
+    background-color: #373737;
+    border-color: #191919;
+    border-width: 1px;
+    padding: 1px 4px;
+}
+
+.port-tag.port-tag--top {
+    transform-origin: right;
+    translate: -100% -50%;
+    rotate: 45deg;
+}
+
+.port-tag.port-tag--top > .port-tag__container {
+    translate: 22px -1px;
+    padding-right: 16px;
+    border-radius: 0 9px 9px 0;
+}
+
+.port-tag.port-tag--bottom {
+    transform-origin: 9px 11px;
+    translate: 0 0;
+    rotate: 45deg;
+}
+
+.port-tag.port-tag--bottom > .port-tag__container {
+    translate: 0 0;
+    padding-left: 15px;
+    border-radius: 9px 0 0 9px;
+}
+
+.port-tag.port-tag--left,
+.port-tag.port-tag--right {
+    translate: 0 0;
+}
+
+.port-tag.port-tag--left > .port-tag__container {
+    border-right-width: 0;
+    padding-right: 0;
+}
+
+.port-tag.port-tag--right > .port-tag__container {
+    border-left-width: 0;
+    padding-left: 0;
+}

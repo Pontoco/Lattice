@@ -32,10 +32,21 @@ namespace Lattice.Editor.Views
     {
         public const string UssClassName = "port";
         public const string NullableUssClassName = UssClassName + "--is-nullable";
+        public const string VerticalUssClassName = UssClassName + "--vertical";
+        public const string HorizontalUssClassName = UssClassName + "--horizontal";
         public const string ConnectedUssClassName = UssClassName + "--connected";
         public const string AcceptsMultipleEdgesUssClassName = UssClassName + "--accepts-multiple-edges";
+        public const string SecondaryUssClassName = UssClassName + "--secondary";
+        public const string ConnectorName = "connector";
+        
+        private static readonly VisualElement FauxBoxCap = new(); // An element to override base()'s direct modifications of m_ConnectorBoxCap
+        [PublicAPI] // Prevent convert to inline variable warning. This variable promotes future proper usage within this class.
+        private readonly VisualElement connectorBoxCap; // m_ConnectorBoxCap is overridden by above.
 
         private readonly IconBadges badges;
+
+        /// <summary>See <see cref="AddPortTag"/> and <see cref="RemovePortTag"/>.</summary>
+        private PortTagView portTag;
 
         /// <summary>A half-circle element that indicates this element is nullable.</summary>
         private readonly VisualElement nullableHalfCircle;
@@ -95,6 +106,12 @@ namespace Lattice.Editor.Views
 
         /// <summary>If the port was created from an invalid state. Used in cases where a dangling edge created a port.</summary>
         public bool IsVirtual => PortData.IsVirtual;
+
+        /// <summary>If a <see cref="PortTagView"/> has been added to this port.</summary>
+        public bool HasPortTag => portTag != null;
+
+        /// <summary>If the port is connected to an edge, or to a port tag.</summary>
+        public bool ConnectedVisually => connected || HasPortTag;
 
         /// <summary>The parent node. Can be null if the port was created in an entirely readonly mode.</summary>
         [CanBeNull]
@@ -157,7 +174,9 @@ namespace Lattice.Editor.Views
 
             this.AddManipulator(new SelectConnectedEdgesManipulator());
 
-            badges = new IconBadges(owner, m_ConnectorBoxCap);
+            connectorBoxCap = m_ConnectorBoxCap;
+            badges = new IconBadges(owner, connectorBoxCap);
+            m_ConnectorBoxCap = FauxBoxCap;
         }
 
         /// <inheritdoc />
@@ -167,35 +186,6 @@ namespace Lattice.Editor.Views
             Rect layout = this.layout;
             Rect rect = new(0, 0, layout.width, layout.height);
             return rect.Contains(localPoint);
-        }
-
-        /// <summary>Calculates and updates the correct color of the port.</summary>
-        private void UpdateColor()
-        {
-            if (PortType == null)
-            {
-                portColor = Color.gray;
-                return;
-            }
-
-            // Set the color randomly based on the type.
-            // if (owner.Owner.ColorByDataType)
-            // {
-            //     portColor = UniqueColor(PortType.FullName);
-            // }
-
-            // Ref portViews are always blue.
-            if (PortData.isRefType)
-            {
-                if (direction == Direction.Input)
-                {
-                    portColor = new Color(0.45f, 0.59f, 0.67f);
-                }
-                else
-                {
-                    portColor = new Color(0.47f, 0.82f, 1f);
-                }
-            }
         }
 
         public void SetTypeFromCompilation(GraphCompilation compilation)
@@ -213,9 +203,9 @@ namespace Lattice.Editor.Views
                     Debug.LogWarning($"Couldn't update port type. Node was not present in compilation? [{lnode}]");
                     return;
                 }
-                if (compilation.Mappings[lnode].OutputPortMap.TryGetValue(PortData.identifier, out IRNode irNode))
+                if (compilation.Mappings[lnode].OutputPortMap.TryGetValue(PortData.identifier, out IRNodeRef irNode))
                 {
-                    Type outputType = compilation.CompileNode(irNode).OutputType;
+                    Type outputType = compilation.CompileNode(irNode.Node).OutputType;
 
                     // Ignore exceptions. Even if the node is malformed, we don't want to set the ports to exception type.
                     // That'll break the edge connections.
@@ -250,22 +240,6 @@ namespace Lattice.Editor.Views
             return pv;
         }
 
-        /// <summary>Update the size of the port view (using the portData.sizeInPixel property)</summary>
-        public void UpdatePortSize()
-        {
-            int size = PortData.sizeInPixel != 0 ? PortData.sizeInPixel : LatticeNode.PortSizePrimaryValue;
-            m_ConnectorBox.style.width = size;
-            m_ConnectorBox.style.height = size;
-            m_ConnectorBoxCap.style.width = size - 4;
-            m_ConnectorBoxCap.style.height = size - 4;
-
-            // Update connected edge sizes:
-            foreach (EdgeView e in Edges)
-            {
-                e.UpdateEdgeSize();
-            }
-        }
-
         public override void Connect(Edge edge)
         {
             OnConnected?.Invoke(this, edge);
@@ -297,7 +271,7 @@ namespace Lattice.Editor.Views
             inputNode?.OnPortDisconnected(edge.input as PortView);
             outputNode?.OnPortDisconnected(edge.output as PortView);
 
-            EnableInClassList(ConnectedUssClassName, connected);
+            EnableInClassList(ConnectedUssClassName, ConnectedVisually);
         }
 
         /// <inheritdoc />
@@ -311,6 +285,7 @@ namespace Lattice.Editor.Views
         {
             PortData = data;
             EnableInClassList(AcceptsMultipleEdgesUssClassName, PortData.acceptMultipleEdges);
+            EnableInClassList(SecondaryUssClassName, PortData.secondaryPort);
 
             // Only apply the port type if we don't have one set from the compilation.
             if (PortType == null && data.defaultType != null)
@@ -320,19 +295,11 @@ namespace Lattice.Editor.Views
 
             portName = !string.IsNullOrEmpty(data.displayName) ? data.displayName : PortData.identifier;
 
-            if (PortData.vertical)
-            {
-                AddToClassList("Vertical");
-            }
-            else
-            {
-                RemoveFromClassList("Vertical");
-            }
+            EnableInClassList(VerticalUssClassName, PortData.vertical);
+            EnableInClassList(HorizontalUssClassName, !PortData.vertical);
 
             Tooltip = PortData.customTooltip ?? GraphUtils.GetFormattedTypeNameWithIdentifierWithColor(PortType, Identifier);
-
-            UpdatePortSize();
-
+            
             // Update the edge in case the port color have changed
             schedule.Execute(() =>
             {
@@ -417,10 +384,40 @@ namespace Lattice.Editor.Views
             badges.AddMessageView(message, messageType, alignment, allowsRemoval);
         }
 
+        /// <summary>True if the badge is present under the port.</summary>
+        public bool HasMessageView(IconBadge badge) => badges.Contains(badge);
+
         /// <summary>Removes all message views.</summary>
         public void ClearMessageViews()
         {
             badges.ClearMessageViews();
+        }
+
+        /// <summary>
+        ///     Adds a <see cref="PortTagView"/> to this port if one doesn't exist.
+        ///     Check <see cref="HasPortTag"/> or call <see cref="RemovePortTag"/> before calling.
+        /// </summary>
+        public void AddPortTag(string label)
+        {
+            if (HasPortTag)
+            {
+                Debug.LogWarning("Port already has a tag.");
+                return;
+            }
+            portTag = new PortTagView(this, label); // Handles adding/attaching itself.
+            AddToClassList(ConnectedUssClassName);
+        }
+        
+        /// <summary>Removes a <see cref="PortTagView"/> if present.</summary>
+        public void RemovePortTag()
+        {
+            if (!HasPortTag)
+            {
+                return;
+            }
+            portTag.RemoveFromHierarchy();
+            portTag = null;
+            EnableInClassList(ConnectedUssClassName, ConnectedVisually);
         }
 
         /// <inheritdoc />

@@ -28,8 +28,7 @@ namespace Lattice.Editor.Views
     {
         // Uss classes:
         public const string UssClassName = "node";
-        public const string ControlsUssClassName = UssClassName + "__controls";
-        public const string ControlsEmptyUssClassName = ControlsUssClassName + "--empty";
+        public const string NullableIndicatorUssClassName = UssClassName + "__nullable-indicator";
         public const string TypeLabelUssClassName = UssClassName + "__type-label";
         public const string TitleNameContainerUssClassName = UssClassName + "__title-name-container";
         public const string TitleNameContainerHasCustomNameUssClassName = TitleNameContainerUssClassName + "--has-custom-name";
@@ -48,6 +47,33 @@ namespace Lattice.Editor.Views
         public const string LeftPortContainerName = "input";
         public const string RightPortContainerName = "output";
 
+        /// <inheritdoc />
+        public override bool expanded
+        {
+            get => base.expanded;
+            set
+            {
+                if (base.expanded == value)
+                {
+                    return;
+                }
+                
+                // Handle visibility of non-port elements in the controlsContainer.
+                // the base implementation of RefreshExpandedState doesn't handle non-port elements.
+                for (var i = 0; i < controlsContainer.childCount; i++)
+                {
+                    VisualElement element = controlsContainer[i];
+                    if (element is Port)
+                    {
+                        continue;
+                    }
+                    element.EnableInClassList("hidden", !value);
+                    element.visible = value;
+                }
+                base.expanded = value;
+            }
+        }
+
         /// <summary>The node this renders.</summary>
         public BaseNode NodeTarget;
 
@@ -60,11 +86,13 @@ namespace Lattice.Editor.Views
 
         /// <summary>The parent graph view.</summary>
         public BaseGraphView Owner { get; private set; }
+        
+        [CanBeNull] internal string TitleIconClass => titleIcon?.panel != null ? currentTitleIconClass : null;
 
         private VisualElement titleIcon;
         private string currentTitleIconClass;
         protected VisualElement titleNameContainer; // Within titleContainer. Holds node type and renaming label.
-        protected VisualElement controlsContainer; // The foldout properties within the node.
+        protected VisualElement controlsContainer => inputContainer; // The foldout properties within the node.
         protected VisualElement debugContainer; // The debug string under a node when in debug mode.
         protected VisualElement compileDataContainer; // Debug string with compilation metadata for the node.
         protected VisualElement rightTitleContainer; // Holds the settings gear, if present.
@@ -164,20 +192,19 @@ namespace Lattice.Editor.Views
 
         protected virtual void InitializeView()
         {
-            controlsContainer = new VisualElement { name = "controls" };
-            controlsContainer.AddToClassList(ControlsUssClassName);
-            controlsContainer.AddToClassList(ControlsEmptyUssClassName);
-            mainContainer.Q("contents").Insert(0, controlsContainer);
-
             var topPortsAll = new VisualElement { name = "TopPortsAll", pickingMode = PickingMode.Ignore };
             Add(topPortsAll);
 
             topPortContainer = new VisualElement { name = TopPortContainerName, pickingMode = PickingMode.Ignore };
             topPortsAll.Insert(0, topPortContainer);
+            
+            StripedElement nullableIndicator = new() { name = "NullableIndicator" };
+            nullableIndicator.AddToClassList(NullableIndicatorUssClassName);
+            titleContainer.Insert(0, nullableIndicator);
 
             statePortContainer = new VisualElement { name = StatePortContainerName, pickingMode = PickingMode.Ignore };
             statePortContainer.SetEnabled(false); // todo: StateRef as inputs aren't currently supported.
-            titleContainer.Insert(0, statePortContainer);
+            titleContainer.Insert(1, statePortContainer);
 
             var bottomPortsAll = new VisualElement { name = "BottomPortsAll", pickingMode = PickingMode.Ignore };
             Add(bottomPortsAll);
@@ -196,7 +223,7 @@ namespace Lattice.Editor.Views
 
             titleNameContainer = new VisualElement();
             titleNameContainer.AddToClassList(TitleNameContainerUssClassName);
-            titleContainer.Insert(1, titleNameContainer);
+            titleContainer.Insert(2, titleNameContainer);
 
             // Move the normal title into the container.
             titleNameContainer.Add(defaultTitleLabel);
@@ -207,7 +234,7 @@ namespace Lattice.Editor.Views
             titleNameContainer.Add(nodeTypeLabel);
 
             rightTitleContainer = new VisualElement { name = "RightTitleContainer", pickingMode = PickingMode.Ignore };
-            titleContainer.Insert(2, rightTitleContainer);
+            titleContainer.Insert(3, rightTitleContainer);
 
             // Add renaming label and elements if it's renamable.
             if ((capabilities & Capabilities.Renamable) != 0)
@@ -230,7 +257,7 @@ namespace Lattice.Editor.Views
             titleTextField.style.display = DisplayStyle.None;
             titleNameContainer.Insert(0, titleTextField);
 
-            var titleLabel = this.Q("title-label") as Label;
+            var titleLabel = this.Q<Label>("title-label");
             titleLabel!.RegisterCallback<MouseDownEvent>(e =>
             {
                 if (e.clickCount == 2 && e.button == (int)MouseButton.LeftMouse)
@@ -252,24 +279,6 @@ namespace Lattice.Editor.Views
 
             titleTextField.RegisterCallback<FocusOutEvent>(e => CloseAndSaveTitleEditor(titleTextField.value));
 
-            void OpenTitleEditor()
-            {
-                // show title textbox
-                titleTextField.style.display = DisplayStyle.Flex;
-                titleLabel.style.display = DisplayStyle.None;
-                titleTextField.focusable = true;
-
-                titleTextField.SetValueWithoutNotify(title);
-
-                // Calling focus immediately seems to cause a FocusOutEvent and call the Close handler above.
-                // Delaying this call works just fine!
-                EditorApplication.delayCall += () =>
-                {
-                    titleTextField.Focus();
-                    titleTextField.SelectAll();
-                };
-            }
-
             void CloseAndSaveTitleEditor(string newTitle)
             {
                 string name1 = "Renamed node " + newTitle;
@@ -285,11 +294,30 @@ namespace Lattice.Editor.Views
             }
         }
 
+        /// <summary>Shows the editable text field that enables the user to edit the node title.</summary>
+        protected void OpenTitleEditor()
+        {
+            // show title textbox
+            titleTextField.style.display = DisplayStyle.Flex;
+            this.Q<Label>("title-label").style.display = DisplayStyle.None;
+            titleTextField.focusable = true;
+
+            titleTextField.SetValueWithoutNotify(title);
+
+            // Calling focus immediately seems to cause a FocusOutEvent and call the Close handler above.
+            // Delaying this call works just fine!
+            EditorApplication.delayCall += () =>
+            {
+                titleTextField.Focus();
+                titleTextField.SelectAll();
+            };
+        }
+
         private void UpdateTitle()
         {
             bool hasCustomName = !string.IsNullOrEmpty(NodeTarget.CustomName);
             title = hasCustomName ? NodeTarget.CustomName : NodeTarget.DefaultName;
-            nodeTypeLabel.style.display = hasCustomName ? DisplayStyle.Flex : DisplayStyle.None;
+            nodeTypeLabel.style.display = hasCustomName && !string.IsNullOrEmpty(NodeTarget.DefaultName) ? DisplayStyle.Flex : DisplayStyle.None;
             titleNameContainer.EnableInClassList(TitleNameContainerHasCustomNameUssClassName, hasCustomName);
         }
 
@@ -354,7 +382,7 @@ namespace Lattice.Editor.Views
             }
 
             // Hide / show the collapse button
-            m_CollapseButton.SetVisibility(inputContainer.childCount != 0 || outputContainer.childCount != 0 || controlsContainer.childCount != 0);
+            m_CollapseButton.SetVisibility(inputContainer.childCount != 0 || outputContainer.childCount != 0);
         }
 
         // Workaround for bug in GraphView that makes the node selection border way too big
@@ -460,8 +488,15 @@ namespace Lattice.Editor.Views
         {
             portContainer.Sort((elem1, elem2) =>
             {
-                PortView p1 = (PortView)elem1;
-                PortView p2 = (PortView)elem2;
+                if (elem1 is not PortView p1)
+                {
+                    return -1;
+                }
+
+                if (elem2 is not PortView p2)
+                {
+                    return 1;
+                }
 
                 int index1 = portOrder.FindIndex(p => p.portData == p1.PortData);
                 int index2 = portOrder.FindIndex(p => p.portData == p2.PortData);
@@ -672,7 +707,7 @@ namespace Lattice.Editor.Views
             else
             {
                 controlsContainer.Add(element);
-                controlsContainer.RemoveFromClassList(ControlsEmptyUssClassName);
+                RefreshPorts();
             }
             element.name = field.Name;
 
@@ -756,7 +791,7 @@ namespace Lattice.Editor.Views
                 BaseNode node = NodeTarget;
                 Debug.Log($"{node.DefaultName}");
                 Debug.Log($"{node.GetType().FullName}");
-                Debug.Log($"{node.GUID}");
+                Debug.Log($"{node.FileId}");
                 foreach (var port in node.InputPorts)
                 {
                     Debug.Log($"\tInput Port: {port.portData.identifier} :: {JsonUtility.ToJson(port.portData)}");

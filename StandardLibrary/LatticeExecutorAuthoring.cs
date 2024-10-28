@@ -62,11 +62,19 @@ namespace Lattice.StandardLibrary
                     HashSet<Type> componentsAdded = new();
                     foreach (var node in graph.nodes)
                     {
+                        
                         // This can't be in node.Bake() because it needs to keep track globally which ECS Components have already
                         // been added to the entity.
                         if (node is EcsComponentNode ecsComponentNode)
                         {
                             var componentType = ecsComponentNode.ComponentType.type;
+                            
+                            // Make sure to request a LocalTransform if the script uses it.
+                            if (componentType == typeof(LocalTransform))
+                            {
+                                GetEntity(TransformUsageFlags.Dynamic);
+                            }
+                            
                             if (ecsComponentNode.AddDuringBake && !componentsAdded.Contains(componentType))
                             {
                                 // todo: Special case the locatransform
